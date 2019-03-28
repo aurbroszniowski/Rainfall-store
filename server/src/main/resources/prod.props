@@ -1,0 +1,4 @@
+offheap=2560
+disk=/data/perfstore_data
+port=4567
+path=performance

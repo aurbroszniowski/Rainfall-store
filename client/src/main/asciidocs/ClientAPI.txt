@@ -1,0 +1,62 @@
+This document describes the client side API methods that
+should be used by test code to store the artifacts in RainfallStore.
+
+The URL of the StoreClientService (see below) should be defined as an
+optional system property. If this property is not set (i.e. the value is null),
+the defaultService factory method returns a NOOP service instance, and all the
+subsequent method calls do nothing.
+
+Initialise a StoreClientService.
+This should be called on the test machine before starting the client jobs:
+
+    StoreClientService storeClientService = StoreClientServiceFactory.defaultService(URL);
+
+Add a test run for the given test case name, class name, and Terracotta version.
+This should be called on the test machine after the client job is complete. The below code
+assumes that the test class has a testName() method returning the name of the test case
+which has been registered in the web form:
+
+    long runId = storeClientService.addRun(testName(), getClass().getCanonicalName(), terracottaVersion);
+
+Add a client job with output artefacts to the current test run.
+This should be called on the client machine:
+
+    storeClientService.addClientJob(runId, clientId, context.getClientId(), scenario.getDescription(), outputPath);
+
+Add monitor log outputs.
+The processMetrics method should be called on the test machine, after
+the completion of all client jobs. The addMetrics method will be actually called on
+the machines where the monitors are running:
+
+    monitor.processMetrics((host, transportableFile) ->
+              storeClientService.addMetrics(runId, host, transportableFile));
+
+Update the current run status:
+This should be called on the test machine after the completion of the run.
+The original status of a running test is INCOMPETE.
+If the run completes successfully, then update to COMPLETE.
+If the run fails with an exception, update to FAILED:
+
+    try {
+        //run tests
+        service.setStatus(runID, COMPLETE);
+    } catch (Exception e) {
+        service.setStatus(runID, FAILED);
+    }
+
+
+Compare the current run to the last baseline for the given test, and report
+possible performance changes with Kolmogorov-Smirnov test p-values below the given threshold.
+This should be called on the test machine after the completion of the run:
+
+    ChangeReport changeReport = storeClientService.checkRegression(runId, 0.1);
+    Map<String, Double> pValues = changeReport.getPValues();
+    if (!pValues.isEmpty()) {
+        throw new AssertionError("Possible performance change detected in some operations " +
+                "compared to baseline, with p-values below 0.1: " + pValues);
+    }
+
+
+Also see the Javadoc in:
+StoreClientServiceFactory
+StoreClientService

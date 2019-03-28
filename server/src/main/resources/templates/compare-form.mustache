@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        {{> header}}
+
+        <script src="/report.js"></script>
+        <script src="/compare-report.js"></script>
+        <script src="/compare-form.js"></script>
+
+        <title>Compare tests</title>
+    </head>
+    <body>
+       <div class="border summary">
+           {{>home}}
+           <h1><a name="summary">Select test runs to compare</a></h1>
+            <form id="compare_form">
+                <table cellpadding="5">
+                    <tr>
+                        <th align="left">Select test case</th>
+                        <th align="left">Select runs to include</th>
+                        <th align="left">Included runs</th>
+                    </tr>
+                    <tr valign="top">
+                        <td>
+                            <select id="tests" size="20" style="width:300px">
+                                {{#.}}
+                                    <option value="{{ID}}">{{ID}}</option>
+                                {{/.}}
+                            </select>
+                        </td>
+                        <td valign="top">
+                            <select multiple id="runs" size="20" style='width:300px'>
+                            </select>
+                        </td>
+                        <td valign="top">
+                            <select multiple id="included-runs" size="20" style='width:300px'>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <button id="add-btn" class="btn" disabled>Include selected runs</button>
+                        </td>
+                        <td>
+                            <button id="del-btn" class="btn" disabled>Exclude selected runs</button>
+                            <button id="clear-btn" disabled>Clear</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <label>
+                                Common operations in all included runs
+                                <span id="op-spin" style="font-size:16px"></span>
+                            </label>
+                            <input
+                                    type="text" id="common-ops"
+                                    style="width: 100%; pointer-events: none; cursor: not-allowed;"
+                                    value=""
+                            />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <input type="submit" value="Compare common operations" id="compare-btn" class="btn" disabled>
+                        </td>
+                    </tr>
+                </table>
+                <br>
+            </form>
+           <p>Select two or more test runs to include in a comparative report:</p>
+           <ol>
+               <li>Select a test case in the <b>Select test case</b> list.</li>
+               <li>
+                   The runs for the selected test case will appear in the <b>Select runs to include</b> list
+                   in a reverse chronological order,<br>color-coded depending on status:
+                   <span style="color:blue">COMPLETE</span>,
+                   <span style="color:red">FAILED</span>,
+                   <span style="color:green">INCOMPLETE</span>, or
+                   <span style="color:gray">UNKNOWN</span>.
+                   <br>Baseline runs are highlighted by bold and underlined font.
+               </li>
+               <li>
+                   Select runs and press <b>Include selected runs</b> button:
+                   the runs will be added to the <b>Included runs</b> list.</li>
+               <li>
+                   To include runs from other test cases, return to step 1.
+                   Note that the <b>Included runs</b> list will remain unchanged.
+               </li>
+               <li>
+                   You can edit <b>Included runs</b> list using <b>Exclude selected runs</b> or <b>Clear</b> buttons.
+               </li>
+               <li>
+                   The <b>Common operations in all included runs</b> field always contains the set intersection
+                   of<br>the operations in current runs in <b>Included runs</b> list.<br>
+                   The field is blank when the list is empty or at list one included run has no completed operation.
+               </li>
+               <li>
+                   The <b>Compare common operations</b> button is active when the <b>Included runs</b> list
+                   contains at least one item, and<br>
+                   the <b>Common operations in all included runs</b> is not blank.
+                   Press this button to create a comparative report including<br>
+                   the runs and their common operations, in a new browser window.
+               </li>
+           </ol>
+       </div>
+
+       <script>
+            $(document).ready(() => {
+                selectComparison();
+            })
+        </script>
+    </body>
+</html>

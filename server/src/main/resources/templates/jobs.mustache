@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        {{> header}}
+        <title>Runs</title>
+    </head>
+    <body>
+        <div class="border summary">
+            {{>home}}
+            <h1><a name="summary">Client jobs</a></h1>
+            <table id="jobs_table" border="1" cellpadding="5">
+                <tr>
+                    <th>Client number</th>
+                    <th>Host</th>
+                    <th>Symbolic name</th>
+                    <th>Details</th>
+                    <th>Completion time</th>
+                </tr>
+                {{#.}}
+                    <tr valign="top">
+                        {{#value}}
+                            <td>
+                                <a {{>idlink}}='getJobURL'>{{clientNumber}}</a>
+                            </td>
+                            <td>{{host}}</td>
+                            <td>{{symbolicName}}</td>
+                            <td style="white-space:pre-wrap; word-wrap:break-word">{{details}}</td>
+                        {{/value}}
+                        <td>{{>date}}</td>
+                    </tr>
+                {{/.}}
+                {{^.}}<td colspan="5">No completed jobs yet.</td>{{/.}}
+            </table>
+        </div>
+    </body>
+</html>

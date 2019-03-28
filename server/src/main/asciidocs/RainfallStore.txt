@@ -1,0 +1,68 @@
+RainfallStore contains performance test output files with metadata.
+Each experiment is represented as single record in testCases dataset.
+Each run is represented as a record in run dataset.
+Each output file is stored in a record in output dataset.
+Dataset structures are shown below:
+
+==================================================================
+testCases
+------------------------------------------------------------------
+ID: String (matching [A-Za-z0-9_-]+)
+description: String
+timestamp: long (epoch seconds)
+==================================================================
+
+
+==================================================================
+runs
+------------------------------------------------------------------
+ID: long
+caseID: String (refers to the corresponding testCase ID)
+version: String (TC version, e.g. 1.3)
+checksum: String (source code version, e.g. git commit checksum)
+className: String (fully qualified name of the test class)
+status: updateable String ("UNKNOWN", "INCOMPLETE", "COMPLETE", or "FAILED")
+baseline: baseline status (true, false)
+timestamp: long (epoch seconds)
+==================================================================
+
+==================================================================
+jobs
+------------------------------------------------------------------
+ID: long
+runId: long (refers to the corresponding run ID)
+clientNumber: int (client number in the array)
+host:  String (client array host name)
+symbolicName: String (client's symbolic name)
+details: String (multiline description of the scenario)
+timestamp: long (epoch seconds)
+==================================================================
+
+
+==================================================================
+outputs
+------------------------------------------------------------------
+ID: long
+jobId: long (refers to the corresponding clientJob's ID)
+operation: (one of GET, MISS etc)
+format: String (e.g. "hlog")
+data: bytes (file content)
+compressionFormat: string (zip|lz4|raw), default is zip
+originalLength: int (length of data before compression)
+timestamp: long (epoch seconds)
+==================================================================
+
+
+==================================================================
+stats
+------------------------------------------------------------------
+ID: long
+runID: long (refers to the corresponding run's ID)
+host:  String (host name)
+data: bytes (file content)
+compressionFormat: string (zip|lz4|raw), default is zip
+originalLength: int (length of data before compression)
+type: String (e.g. "vmstat")
+timestamp: long (epoch seconds)
+==================================================================
+

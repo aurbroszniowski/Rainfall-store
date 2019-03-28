@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    {{> header}}
+
+    <script src="/lib/plotly-latest.min.js"></script>
+    <script src="/report.js"></script>
+
+    <title>Test run summary</title>
+</head>
+<body>
+    <div class="border summary">
+        {{>home}}
+        <h1><a name="summary">Test run summary</a></h1>
+        <table border="1" cellpadding="5">
+            <tr>
+                <td>Test case</td>
+                <td><a {{>parentlink}}="getCaseURL">{{parentID}}</a></td>
+            </tr>
+            <tr>
+                <td>Run date</td>
+                <td>{{>date}}</td>
+            </tr>
+            {{#value}}
+                <tr>
+                    <td>Terracotta version</td>
+                    <td>{{version}}</td>
+                </tr>
+                <tr>
+                    <td>Class name</td>
+                    <td>{{className}}</td>
+                </tr>
+                <tr>
+                    <td>Git revision checksum</td>
+                    <td>{{checksum}}</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>{{status}}</td>
+                </tr>
+            {{/value}}
+        </table>
+        <br>
+        {{>reports}}
+    </div>
+    <br/>
+
+    <div class="border summary">
+        <h1><a name="tps">Distributed reports</a></h1>
+        <table id="jobs_table"></table>
+        <script>
+            $(document).ready(function() {
+                var url = getJobsTableURL('{{ID}}');
+                $('#jobs_table').load(url, format);
+            });
+        </script>
+    </div>
+    <br/>
+
+    <div class="border summary">
+        <h1><a name="tps">Monitor log reports</a></h1>
+        <table id="stats_table"></table>
+        <script>
+            $(document).ready(function() {
+                var url = getStatsTableURL('{{ID}}');
+                $('#stats_table').load(url, format);
+            });
+        </script>
+    </div>
+    <br/>
+
+    <script>
+        $(document).ready(reportAggregate("{{ID}}"));
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        {{> header}}
+
+        <link href="/lib/jquery-ui.min.css" rel="stylesheet">
+        <script src="/lib/jquery-ui.min.js"></script>
+        <script src="/lib/plotly-latest.min.js"></script>
+        <script src="/report.js"></script>
+        <script src="/compare-report.js"></script>
+        <script src="/baselines.js"></script>
+
+        <title>Comparing runs</title>
+    </head>
+    <body>
+        <div class="border summary">
+            {{>home}}
+            <h1><a name="summary">Performance comparative report summary</a></h1>
+            <table border="1" cellpadding="5" id="run_table">
+                <tr>
+                    <th>Test case</th>
+                    <th>Run date</th>
+                    <th>Terracotta version</th>
+                    <th>Class name</th>
+                    <th>Git revision checksum</th>
+                    <th>Status</th>
+                    <th>Baseline</th>
+                </tr>
+                {{#.}}
+                    <tr>
+                        <td>
+                            <a {{>parentlink}}="getCaseURL">{{parentID}}</a>
+                        </td>
+                        <td>
+                            <a {{>idlink}}='getRunURL'>{{>date}}</a>
+                        </td>
+                        {{#value}}
+                            <td>{{version}}</td>
+                            <td>{{className}}</td>
+                            <td>{{checksum}}</td>
+                            <td>{{status}}</td>
+                            <td align="center">
+                                <input type="checkbox" class="baseline-check" data-id="{{ID}}" data-baseline="{{baseline}}" disabled>
+                            </td>
+                        {{/value}}
+                    </tr>
+                {{/.}}
+                {{^.}}<td colspan="4">No runs yet.</td>{{/.}}
+            </table>
+            <br>
+
+            <div id="tabs">
+                <ul>
+                    <li><a href="#tps-box">TPS</a></li>
+                    <li><a href="#response-time-box">Response time means and standard deviations</a></li>
+
+                    <li><a href="#MEDIAN-box">Response time medians</a></li>
+                    <li><a href="#_99-box">Response time 99th percentiles</a></li>
+                    <li><a href="#_99_99-box">Response time 99.99th percentiles</a></li>
+                    <li><a href="#MAX-box">Response time maximums</a></li>
+
+                    <li><a href="#percentiles-box">Response time percentiles distribution</a></li>
+                </ul>
+
+                <div id="tps-box">
+                    <div id="tps-tabs">
+                        <ul id="tps-ul"></ul>
+                    </div>
+                </div>
+
+                <div id="response-time-box">
+                    <div id="response-time-tabs">
+                        <ul id="response-time-ul"></ul>
+                    </div>
+                </div>
+
+                <div id="MEDIAN-box">
+                    <div id="MEDIAN-tabs">
+                        <ul id="MEDIAN-ul"></ul>
+                    </div>
+                </div>
+
+                <div id="_99-box">
+                    <div id="_99-tabs">
+                        <ul id="_99-ul"></ul>
+                    </div>
+                </div>
+
+                <div id="_99_99-box">
+                    <div id="_99_99-tabs">
+                        <ul id="_99_99-ul"></ul>
+                    </div>
+                </div>
+
+                <div id="MAX-box">
+                    <div id="MAX-tabs">
+                        <ul id="MAX-ul"></ul>
+                    </div>
+                </div>
+
+                <div id="percentiles-box">
+                    <div id="percentiles-tabs">
+                        <ul id="percentiles-ul"></ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <br/>
+
+        <script>
+            $(document).ready(setBaselineChecks());
+
+            let runRecs = [{{#.}} {ID: {{ID}}, date: {{timeStamp}} } , {{/.}}]
+            $(document).ready(reportComparison(runRecs));
+            $( "#tabs" ).tabs();
+            $( "#tps-tabs" ).tabs();
+            $( "#response-time-tabs" ).tabs();
+            $( "#MEDIAN-tabs" ).tabs();
+            $( "#_99-tabs" ).tabs();
+            $( "#_99_99-tabs" ).tabs();
+            $( "#MAX-tabs" ).tabs();
+            $( "#percentiles-tabs" ).tabs();
+        </script>
+    </body>
+</html>

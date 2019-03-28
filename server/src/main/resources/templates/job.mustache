@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head lang="en">
+        {{> header}}
+
+        <script src="/lib/plotly-latest.min.js"></script>
+        <script src="/report.js"></script>
+
+        <title>Client job summary</title>
+    </head>
+    <body>
+        <div class="border summary">
+            {{>home}}
+            <h1><a name="summary">Performance report summary</a></h1>
+            <table border="1" cellpadding="5" style="white-space:pre-wrap; word-wrap:break-word">
+                <tr>
+                    <td>Test run</td>
+                    <td><a {{>parentlink}}="getRunURL">{{parentID}}</a></td>
+                </tr>
+                {{#.}}
+                    {{#value}}
+                        <tr>
+                            <td>Client number</td>
+                            <td>{{value.clientNumber}}</td>
+                        </tr>
+                        <tr>
+                            <td>Host</td>
+                            <td>{{value.host}}</td>
+                        </tr>
+                        <tr>
+                            <td>Symbolic name</td>
+                            <td>{{value.symbolicName}}</td>
+                        </tr>
+                        <tr>
+                            <td valign="top">Details</td>
+                            <td>{{value.details}}</td>
+                        </tr>
+                    {{/value}}
+                    <tr>
+                        <td>Completion time</td>
+                        <td>{{>date}}</td>
+                    </tr>
+                {{/.}}
+            </table>
+            <br/>
+            {{>reports}}
+        </div>
+        <br/>
+
+        <div class="border summary">
+            <h1><a name="tps">Monitor log reports</a></h1>
+            <table id="stats_table"></table>
+            <script>
+            $(document).ready(function() {
+                var url = getJobStatsTableURL('{{parentID}}', '{{value.host}}');
+                $('#stats_table').load(url, format);
+            });
+        </script>
+        </div>
+        <br/>
+
+        <script>
+            $(document).ready(reportJob("{{ID}}"));
+        </script>
+    </body>
+</html>

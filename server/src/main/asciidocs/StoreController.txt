@@ -1,0 +1,69 @@
+==================================================================
+Home page
+------------------------------------------------------------------
+http://localhost:4567/performance  - this
+redirects to /cases
+==================================================================
+
+
+==================================================================
+testCases
+------------------------------------------------------------------
+post:   /cases                       add a test case
+get:    /cases                       table of existing cases, form for adding a new case
+get:    /cases/:name                 get a test case by a unique name
+get:    /cases/:name/runs            get a list of runs for a test case
+get:    /cases/:name/runs/json       get a list of runs for a test case as json
+==================================================================
+
+
+==================================================================
+runs
+------------------------------------------------------------------
+post:   /runs/:testCaseId                   add a run to a parent test case
+post:   /runs/:runId/status                 update run status to "UNKNOWN", "INCOMPLETE", "COMPLETE", or "FAILED"
+post:   /runs/:runId/baseline               set the baseline status of the run
+get:    /runs/:runId                        get a run by ID with a summary of client jobs and monitor log outputs
+get:    /runs/:runId/jobs                   get a list of client jobs for the given run ID
+get:    /runs/:runId/stats                  get a list of monitor logs for the given run ID
+get:    /runs/:runId/stats/:host            get a list of monitor logs for the given run ID from the given host
+get:    /runs/:runId/operations             get a set of operations for the given run ID
+get:    /runs/:runIds/common-operations     get a set of common operations for the given run IDs
+get:    /runs/:runId/aggregate/:operation   get aggregated hdr log data from client jobs for the given run ID and given operation
+get:    /runs/:runId/regression/:threshold  report performance changes between the run and the baseline, with pvalues < threshold
+==================================================================
+
+
+==================================================================
+clientJobs
+------------------------------------------------------------------
+post:   /jobs/:runId                 add a client job to a parent run
+get:    /jobs/:jobId                 get a client job by ID
+get:    /jobs/:jobId/outputs         get a list of client outputs for the given job ID
+==================================================================
+
+
+==================================================================
+outputs
+------------------------------------------------------------------
+post:   /outputs/:jobID              add a compressed file output to a parent client job
+get:    /outputs/:id                 get an uncompressed file output by output ID
+get:    /outputs/:id/hdr             get hdr log data by output ID
+==================================================================
+
+
+==================================================================
+stats
+------------------------------------------------------------------
+post:   /stats/:runID              add compressed monitor log output to a parent run
+get:    /stats/:id                 get uncompressed monitor log by ID
+==================================================================
+
+
+==================================================================
+comparative report
+------------------------------------------------------------------
+get:    /compare                                selection of test runs to compare
+get:    /compare/:runId1-runId2                 get a comparison of two runs
+get:    /compare/::runId1-runId2/:operation     get a HDR data mapped to run IDs
+==================================================================
