@@ -181,8 +181,8 @@ public class RainfallStore implements Store {
   }
 
   @Override
-  public Optional<Long> getLastBaselineID() {
-    return runs.getLastBaselineID();
+  public Optional<Long> getLastBaselineID(String testName) {
+    return runs.getLastBaselineID(testName);
   }
 
   @Override

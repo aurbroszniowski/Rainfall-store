@@ -56,7 +56,6 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.nCopies;
 import static java.util.Collections.singleton;
@@ -161,7 +160,7 @@ public class StoreServiceTest {
             throw new IllegalArgumentException("TestCase does not exists: " + testName);
           }
         });
-    when(store.getLastBaselineID())
+    when(store.getLastBaselineID(anyString()))
         .thenReturn(Optional.empty());
 
     when(store.getClientJobs(1L))
@@ -402,20 +401,25 @@ public class StoreServiceTest {
   @Test
   public void testCheckRegressionWithNonExistentRun() {
     Store store = mock(Store.class);
-    when(store.getLastBaselineID())
+    when(store.getLastBaselineID("MyTest"))
         .thenReturn(Optional.of(1L));
     when(store.getRun(2L))
         .thenReturn(Optional.empty());
     StoreService perfService = new StoreService(store, mock(HistogramService.class));
     Result result = perfService.checkRegression("2", "0.0");
-    assertThat(result, is(new Result(HTTP_OK, APPLICATION_JSON,
-        new ChangeReport(1L, 0.0, emptyMap()))));
+    assertThat(result, is(new Result(HTTP_NOT_FOUND, APPLICATION_JSON,
+        singletonMap("msg", "Run ID not found: 2"))));
   }
 
   @Test
   public void testCheckRegressionDifferentOperations() {
     Store store = mock(Store.class);
-    when(store.getLastBaselineID())
+    RunRec runRec = mock(RunRec.class);
+    when(runRec.getParentID())
+        .thenReturn("Test1");
+    when(store.getRun(2L))
+        .thenReturn(Optional.of(runRec));
+    when(store.getLastBaselineID("Test1"))
         .thenReturn(Optional.of(1L));
     when(store.getOperationsForRun(1L))
         .thenReturn(singleton("GET"));
@@ -438,7 +442,12 @@ public class StoreServiceTest {
   @Test
   public void testCheckRegressionChangeDetected() {
     Store store = mock(Store.class);
-    when(store.getLastBaselineID())
+    RunRec runRec = mock(RunRec.class);
+    when(runRec.getParentID())
+        .thenReturn("Test1");
+    when(store.getRun(2L))
+        .thenReturn(Optional.of(runRec));
+    when(store.getLastBaselineID("Test1"))
         .thenReturn(Optional.of(1L));
     when(store.getOperationsForRun(anyLong()))
         .thenReturn(singleton("GET"));

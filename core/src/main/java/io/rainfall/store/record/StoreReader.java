@@ -33,5 +33,5 @@ public interface StoreReader {
 
   List<StatsRec> getStats(long runId, String localhost);
 
-  Optional<Long> getLastBaselineID();
+  Optional<Long> getLastBaselineID(String testName);
 }

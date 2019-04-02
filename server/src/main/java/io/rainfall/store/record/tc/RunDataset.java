@@ -93,8 +93,9 @@ class RunDataset extends ChildDataset<String, TestRun, TestRun.Builder, RunRec> 
     return update(ID, BASELINE, value);
   }
 
-  Optional<Long> getLastBaselineID() {
-    return filter(r -> r.get(BASELINE).orElse(false))
+  Optional<Long> getLastBaselineID(String testName) {
+    return children(testName)
+        .filter(r -> r.get(BASELINE).orElse(false))
         .map(Record::getKey)
         .reduce((a, b) -> b);
   }

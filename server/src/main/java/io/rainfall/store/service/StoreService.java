@@ -330,7 +330,10 @@ public class StoreService {
     try {
       long runID = Long.valueOf(sid);
       double threshold = Double.valueOf(sThreshold);
-      ChangeReport regressionCheck = store.getLastBaselineID()
+      String testName = store.getRun(runID)
+          .orElseThrow(() -> new IllegalArgumentException("Run ID not found: " + runID))
+          .getParentID();
+      ChangeReport regressionCheck = store.getLastBaselineID(testName)
           .map(baselineID -> getChangeReport(baselineID, runID, threshold))
           .orElseGet(() -> new ChangeReport(threshold));
       return new Result(HTTP_OK, APPLICATION_JSON, regressionCheck);

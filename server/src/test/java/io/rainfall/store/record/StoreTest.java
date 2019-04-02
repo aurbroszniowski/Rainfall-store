@@ -279,29 +279,29 @@ public abstract class StoreTest {
       store.addTestCase("MyTest", testCase);
       long runId1 = store.addRun("MyTest", run);
 
-      Optional<Long> notFound = store.getLastBaselineID();
+      Optional<Long> notFound = store.getLastBaselineID("MyTest");
       assertFalse(notFound.isPresent());
 
       store.setBaseline(runId1, true);
 
-      Optional<Long> first = store.getLastBaselineID();
+      Optional<Long> first = store.getLastBaselineID("MyTest");
       assertTrue(first.isPresent());
       assertThat(first.get(), is(runId1));
 
       long runId2 = store.addRun("MyTest", run);
 
-      assertEquals(store.getLastBaselineID(), first);
+      assertEquals(store.getLastBaselineID("MyTest"), first);
       store.setBaseline(runId2, true);
 
-      Optional<Long> second = store.getLastBaselineID();
+      Optional<Long> second = store.getLastBaselineID("MyTest");
       assertTrue(second.isPresent());
       assertThat(second.get(), is(runId2));
 
       store.setBaseline(runId2, false);
-      assertEquals(store.getLastBaselineID(), first);
+      assertEquals(store.getLastBaselineID("MyTest"), first);
 
       store.setBaseline(runId1, false);
-      assertEquals(store.getLastBaselineID(), notFound);
+      assertEquals(store.getLastBaselineID("MyTest"), notFound);
     }
   }
 
