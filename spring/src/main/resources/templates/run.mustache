@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    {{> header}}
+
+    <script src="/lib/plotly-latest.min.js"></script>
+    <script src="/report.js"></script>
+
+    <title>Test run summary</title>
+</head>
+<body>
+    {{#run}}
+    <div class="border summary">
+        {{>home}}
+        <h1><a name="summary">Test run summary</a></h1>
+        <table border="1" cellpadding="5">
+            <tr>
+                <td>Test case</td>
+                <td><a href="{{context-path}}/cases/{{parent.id}}">{{parent.value.name}}</a></td>
+            </tr>
+            <tr>
+                <td>Created</td>
+                <td>{{>created}}</td>
+            </tr>
+            {{#value}}
+                <tr>
+                    <td>Terracotta version</td>
+                    <td>{{version}}</td>
+                </tr>
+                <tr>
+                    <td>Class name</td>
+                    <td>{{className}}</td>
+                </tr>
+                <tr>
+                    <td>Git revision checksum</td>
+                    <td>{{checksum}}</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>{{status}}</td>
+                </tr>
+                <tr>
+                    <td>Updated</td>
+                    <td>{{>updated}}</td>
+                </tr>
+            {{/value}}
+        </table>
+        <br>
+        {{>reports}}
+    </div>
+    <br/>
+
+    <div class="border summary">
+        <h1><a name="tps">Distributed reports</a></h1>
+        <table id="jobs_table"></table>
+        <script>
+            $(document).ready(function() {
+                var url = getJobsTableURL('{{id}}');
+                $('#jobs_table').load(url, format);
+            });
+        </script>
+    </div>
+    <br/>
+
+    <div class="border summary">
+        <h1><a name="tps">Monitor log reports</a></h1>
+        <table id="stats_table"></table>
+        <script>
+            $(document).ready(function() {
+                var url = getStatsTableURL('{{id}}');
+                $('#stats_table').load(url, format);
+            });
+        </script>
+    </div>
+    <br/>
+
+    <script>
+        $(document).ready(reportAggregate("{{id}}"));
+    </script>
+    {{/run}}
+</body>
+</html>
