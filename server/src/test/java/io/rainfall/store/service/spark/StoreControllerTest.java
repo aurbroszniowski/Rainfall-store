@@ -23,14 +23,13 @@ import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestCase;
 import io.rainfall.store.core.TestRun;
 import io.rainfall.store.data.CompressionService;
+import io.rainfall.store.hdr.HdrData;
 import io.rainfall.store.record.OutputRec;
 import io.rainfall.store.record.Rec;
 import io.rainfall.store.record.RunRec;
 import io.rainfall.store.record.Store;
 import io.rainfall.store.record.tc.RainfallStore;
 import io.rainfall.store.service.Result;
-import io.rainfall.store.service.hdr.HdrData;
-import io.rainfall.store.service.hdr.HistogramService;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -65,8 +64,8 @@ import static io.rainfall.store.core.TestRun.Status.COMPLETE;
 import static io.rainfall.store.data.CompressionFormat.LZ4;
 import static io.rainfall.store.data.CompressionServiceFactory.compressionService;
 import static io.rainfall.store.data.Payload.toUtfString;
-import static io.rainfall.store.service.hdr.Percentile.MAX;
-import static io.rainfall.store.service.hdr.Percentile.MEDIAN;
+import static io.rainfall.store.hdr.Percentile.MAX;
+import static io.rainfall.store.hdr.Percentile.MEDIAN;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_CONFLICT;
 import static java.net.HttpURLConnection.HTTP_CREATED;
@@ -494,7 +493,7 @@ public class StoreControllerTest {
     long jobId = store.addClientJob(runId, job);
     addOutput(jobId, "153.hlog");
 
-    Result result = get("outputs/1/hdr");
+    Result result = get("outputs/1/io.rainfall.store.service.spark");
     assertThat(result.getCode(), is(HTTP_OK));
     assertThat(result.getContentType(), is(APPLICATION_JSON));
 
@@ -513,7 +512,7 @@ public class StoreControllerTest {
 
   private long addOutput(long jobId, String resourceName) {
     try {
-      String path = HistogramService.class
+      String path = StoreControllerTest.class
           .getResource(resourceName)
           .getPath();
       byte[] bytes = readAllBytes(Paths.get(path));

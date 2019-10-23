@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.rainfall.store.service.hdr;
+package io.rainfall.store.hdr;
 
 import org.junit.Test;
 
@@ -25,12 +25,12 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static io.rainfall.store.service.hdr.HistogramService.fixedPercentilePoints;
-import static io.rainfall.store.service.hdr.HistogramService.roundTime;
-import static io.rainfall.store.service.hdr.Percentile.MAX;
-import static io.rainfall.store.service.hdr.Percentile.MEDIAN;
-import static io.rainfall.store.service.hdr.Percentile._99;
-import static io.rainfall.store.service.hdr.Percentile._99_99;
+import static io.rainfall.store.hdr.HistogramService.fixedPercentilePoints;
+import static io.rainfall.store.hdr.HistogramService.roundTime;
+import static io.rainfall.store.hdr.Percentile.MAX;
+import static io.rainfall.store.hdr.Percentile.MEDIAN;
+import static io.rainfall.store.hdr.Percentile._99;
+import static io.rainfall.store.hdr.Percentile._99_99;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;

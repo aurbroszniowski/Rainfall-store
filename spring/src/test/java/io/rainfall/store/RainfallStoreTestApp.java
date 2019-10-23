@@ -8,7 +8,6 @@ import io.rainfall.store.dataset.OutputLogDataset;
 import io.rainfall.store.dataset.OutputLogRecord;
 import io.rainfall.store.dataset.Record;
 import io.rainfall.store.dataset.RunDataset;
-import io.rainfall.store.dataset.Utils;
 import io.rainfall.store.values.Case;
 import io.rainfall.store.values.Job;
 import io.rainfall.store.values.MonitorLog;
@@ -22,6 +21,8 @@ import org.springframework.context.annotation.Bean;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static io.rainfall.store.values.Run.Status.COMPLETE;
 import static io.rainfall.store.values.Run.Status.INCOMPLETE;
@@ -104,6 +105,39 @@ public class RainfallStoreTestApp {
         .payload(payload)
         .build();
     long outputLogId = outputLogDataset.save(jobId, outputLog).getId();
+
+    AtomicInteger counter = new AtomicInteger(1);
+    Stream.of("149.hlog", "150.hlog", "152.hlog", "153.hlog")
+        .map(Utils::toLz4CompressedGetOutput)
+        .forEach(o -> {
+          Job j = Job.builder()
+              .clientNumber(counter.incrementAndGet())
+              .host("127.0.0.1")
+              .build();
+          long jid = jobDataset.save(runId, j)
+              .getId();
+          outputLogDataset.save(jid, o);
+        });
+
+    Run run2 = Run.builder()
+        .status(INCOMPLETE)
+        .version("1.1.1.2")
+        .checksum("yyyy")
+        .baseline(true)
+        .className("my.Class")
+        .build();
+    long runId2 = runDataset.save(caseId, run).getId();
+    Stream.of("105.hlog", "106.hlog", "109.hlog", "111.hlog")
+        .map(Utils::toLz4CompressedGetOutput)
+        .forEach(o -> {
+          Job j = Job.builder()
+              .clientNumber(counter.incrementAndGet())
+              .host("remote")
+              .build();
+          long jid = jobDataset.save(runId2, j)
+              .getId();
+          outputLogDataset.save(jid, o);
+        });
 
     Case testSaved = caseDataset.getRecord(caseId)
         .map(Record::getValue)

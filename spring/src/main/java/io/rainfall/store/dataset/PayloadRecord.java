@@ -17,7 +17,7 @@ import javax.persistence.Table;
     @AttributeOverride(name = "value.data", column = @Column(columnDefinition = "BLOB"))
 })
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-class PayloadRecord extends Record<Payload> {
+public class PayloadRecord extends Record<Payload> {
 
   PayloadRecord(Payload value) {
     super(value);

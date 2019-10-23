@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.rainfall.store.service.hdr;
+package io.rainfall.store.hdr;
 
 import org.HdrHistogram.Histogram;
 import org.HdrHistogram.HistogramIterationValue;

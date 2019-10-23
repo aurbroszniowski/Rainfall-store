@@ -4,7 +4,7 @@ import lombok.NonNull;
 
 import java.util.List;
 
-abstract class ChildDataset<
+public abstract class ChildDataset<
     V,
     CR extends ChildRecord<V, PR>,
     CS extends ChildRepository<CR>,

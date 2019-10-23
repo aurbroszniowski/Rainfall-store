@@ -25,6 +25,8 @@ import io.rainfall.store.core.TestCase;
 import io.rainfall.store.core.TestRun;
 import io.rainfall.store.data.CompressionService;
 import io.rainfall.store.data.Payload;
+import io.rainfall.store.hdr.HdrData;
+import io.rainfall.store.hdr.HistogramService;
 import io.rainfall.store.record.ClientJobRec;
 import io.rainfall.store.record.DuplicateNameException;
 import io.rainfall.store.record.OutputRec;
@@ -33,8 +35,6 @@ import io.rainfall.store.record.RunRec;
 import io.rainfall.store.record.StatsRec;
 import io.rainfall.store.record.Store;
 import io.rainfall.store.record.TestCaseRec;
-import io.rainfall.store.service.hdr.HdrData;
-import io.rainfall.store.service.hdr.HistogramService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

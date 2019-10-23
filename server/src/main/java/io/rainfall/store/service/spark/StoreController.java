@@ -98,7 +98,7 @@ public class StoreController implements AutoCloseable {
 
       post("/outputs/:parentId", perfService::addOutput);
       get("/outputs/:id", perfService::getOutputData, TEXT_PLAIN, ":id");
-      get("/outputs/:id/hdr", perfService::getHdrData);
+      get("/outputs/:id/io.rainfall.store.service.spark", perfService::getHdrData);
 
       post("/stats/:parentId", perfService::addStatsLog);
       get("/stats/:id", perfService::getStatsLog, TEXT_PLAIN, ":id");

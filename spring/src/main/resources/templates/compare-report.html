@@ -1,0 +1,139 @@
+<!--
+  ~ Copyright (c) 2014-2019 Aurélien Broszniowski
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <div th:insert="~{header}"></div>
+
+    <link th:href="@{/lib/jquery-ui.min.css}" rel="stylesheet">
+    <script th:src="@{/lib/jquery-ui.min.js}"></script>
+    <script th:src="@{/lib/plotly-latest.min.js}"></script>
+    <script th:src="@{/report.js}"></script>
+    <script th:src="@{/compare-report.js}"></script>
+    <script th:src="@{/baselines.js}"></script>
+
+    <title>Comparing runs</title>
+</head>
+<body>
+<div class="border summary">
+    <div th:insert="~{util :: home}"></div>
+    <h1><a name="summary">Performance comparative report summary</a></h1>
+    <table border="1" cellpadding="5" id="run_table">
+        <tr>
+            <th>Test case</th>
+            <th>Run date</th>
+            <th>Terracotta version</th>
+            <th>Class name</th>
+            <th>Git revision checksum</th>
+            <th>Status</th>
+            <th>Baseline</th>
+        </tr>
+
+        <tr th:each="run: ${runs}" th:object="${run}">
+            <td>
+                <a th:text="*{parent.value.name}" th:href="@{/cases/{id}(id=*{parent.id})}"></a>
+            </td>
+            <td>
+                <a th:include="~{util :: date-format(*{created})}" th:href="@{/runs/{id}(id=*{id})}"></a>
+            </td>
+            <div th:object="${run.value}">
+                <td th:text="*{version}"></td>
+                <td th:text="*{className}"></td>
+                <td th:text="*{checksum}"></td>
+                <td th:text="*{status}"></td>
+                <td align="center">
+                    <input type="checkbox" th:checked="*{baseline}" disabled/>
+                </td>
+            </div>
+        </tr>
+
+    </table>
+    <br>
+
+    <div id="tabs">
+        <ul>
+            <li><a href="#tps-box">TPS</a></li>
+            <li><a href="#response-time-box">Response time means and standard deviations</a></li>
+
+            <li><a href="#MEDIAN-box">Response time medians</a></li>
+            <li><a href="#_99-box">Response time 99th percentiles</a></li>
+            <li><a href="#_99_99-box">Response time 99.99th percentiles</a></li>
+            <li><a href="#MAX-box">Response time maximums</a></li>
+
+            <li><a href="#percentiles-box">Response time percentiles distribution</a></li>
+        </ul>
+
+        <div id="tps-box">
+            <div id="tps-tabs">
+                <ul id="tps-ul"></ul>
+            </div>
+        </div>
+
+        <div id="response-time-box">
+            <div id="response-time-tabs">
+                <ul id="response-time-ul"></ul>
+            </div>
+        </div>
+
+        <div id="MEDIAN-box">
+            <div id="MEDIAN-tabs">
+                <ul id="MEDIAN-ul"></ul>
+            </div>
+        </div>
+
+        <div id="_99-box">
+            <div id="_99-tabs">
+                <ul id="_99-ul"></ul>
+            </div>
+        </div>
+
+        <div id="_99_99-box">
+            <div id="_99_99-tabs">
+                <ul id="_99_99-ul"></ul>
+            </div>
+        </div>
+
+        <div id="MAX-box">
+            <div id="MAX-tabs">
+                <ul id="MAX-ul"></ul>
+            </div>
+        </div>
+
+        <div id="percentiles-box">
+            <div id="percentiles-tabs">
+                <ul id="percentiles-ul"></ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+<br/>
+
+<script th:inline="javascript">
+            $(document).ready(reportComparison([[ ${runs} ]]));
+            $( "#tabs" ).tabs();
+            $( "#tps-tabs" ).tabs();
+            $( "#response-time-tabs" ).tabs();
+            $( "#MEDIAN-tabs" ).tabs();
+            $( "#_99-tabs" ).tabs();
+            $( "#_99_99-tabs" ).tabs();
+            $( "#MAX-tabs" ).tabs();
+            $( "#percentiles-tabs" ).tabs();
+
+</script>
+</body>
+</html>

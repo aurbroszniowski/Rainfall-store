@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-package io.rainfall.store.service;
+package io.rainfall.store.values;
 
-import io.rainfall.store.hdr.HdrData;
+import java.util.ArrayList;
 
-import java.util.HashMap;
-import java.util.Map;
+public class Pair extends ArrayList<Long> {
 
-class Comparison extends HashMap<String, Object> {
-
-  Comparison(Map<Long, HdrData> runs, Map<Pair, Double> pvalues) {
+  public Pair(long left, long right) {
     super(2);
-    put("runs", runs);
-    put("pvalues", pvalues);
+    add(left);
+    add(right);
+  }
+
+  public long getLeft() {
+    return get(0);
+  }
+
+  public long getRight() {
+    return get(1);
   }
 }

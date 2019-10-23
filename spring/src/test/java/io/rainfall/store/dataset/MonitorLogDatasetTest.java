@@ -1,6 +1,7 @@
 package io.rainfall.store.dataset;
 
 import io.rainfall.store.RainfallStoreApp;
+import io.rainfall.store.Utils;
 import io.rainfall.store.data.Payload;
 import io.rainfall.store.values.Case;
 import io.rainfall.store.values.MonitorLog;
@@ -88,6 +89,10 @@ public class MonitorLogDatasetTest {
         .map(Record::getValue)
         .orElse(null);
     assertThat(payloadFound, is(payload));
+
+    PayloadRecord payloadRecord = logDataset.getPayload(childRecord.getId())
+        .get();
+    assertThat(payloadRecord.getValue(), is(payload));
   }
 
   @Test
@@ -101,6 +106,20 @@ public class MonitorLogDatasetTest {
     MonitorLogRecord childRecord = logDataset.save(parentId, log);
     List<MonitorLogRecord> children = logDataset.findByParentId(parentId);
     assertThat(children, contains(childRecord));
+  }
+
+  @Test
+  public void testFindMonitorLogsForRunAndHost() {
+    long parentId = saveParent();
+    MonitorLog log = MonitorLog.builder()
+        .host("localhost")
+        .type("vmstat")
+        .payload(Payload.raw("xxx"))
+        .build();
+    MonitorLogRecord record = logDataset.save(parentId, log);
+    List<MonitorLogRecord> records = logDataset.
+        findMonitorLogsForRunAndHost(parentId, "localhost");
+    assertThat(records, contains(record));
   }
 
   private long saveParent() {

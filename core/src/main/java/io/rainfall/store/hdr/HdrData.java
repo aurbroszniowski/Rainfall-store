@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.rainfall.store.service.hdr;
+package io.rainfall.store.hdr;
 
 import java.util.ArrayList;
 import java.util.EnumMap;

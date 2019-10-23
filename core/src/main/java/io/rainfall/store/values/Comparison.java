@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-package io.rainfall.store.service.hdr;
+package io.rainfall.store.values;
 
-import java.util.stream.Stream;
+import io.rainfall.store.hdr.HdrData;
 
-public enum Percentile {
+import java.util.HashMap;
+import java.util.Map;
 
-  MEDIAN(50.0),
-  _99(99.0),
-  _99_99(99.99),
-  MAX(100.0);
+public class Comparison extends HashMap<String, Object> {
 
-  public static Stream<Percentile> all() {
-    return Stream.of(values());
-  }
-
-  private final double value;
-
-  Percentile(double value) {
-    this.value = value;
-  }
-
-  public double getValue() {
-    return value;
+  public Comparison(Map<Long, HdrData> runs, Map<Pair, Double> pvalues) {
+    super(2);
+    put("runs", runs);
+    put("pvalues", pvalues);
   }
 }

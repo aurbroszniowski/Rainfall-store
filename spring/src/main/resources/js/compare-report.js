@@ -1,5 +1,5 @@
 function reportComparison(runRecs) {
-    let IDs = runRecs.map(rec => rec.ID);
+    let IDs = runRecs.map(rec => rec.id);
     loadCommonOps(IDs, commonOps => reportCommonOps(runRecs, commonOps))
 }
 
@@ -12,15 +12,15 @@ function loadCommonOps(IDs, fun) {
 
 function reportCommonOps(runRecs, commonOps) {
     if (commonOps.length > 0) {
-        let runIDs = runRecs.map(runRec => runRec.ID);
+        let runIDs = runRecs.map(runRec => runRec.id);
         $.each(commonOps, (i, op) => {
             addTabs(op);
             getComparativeHdrData(runIDs, op, comparison => {
                 let hdrMap = new Map(Object.entries(comparison.runs));
                 for (rec of runRecs) {
-                    let runID = rec.ID;
+                    let runID = rec.id;
                     let hdrData = hdrMap.get(runID.toString());
-                    let date = getDate(rec.date);
+                    let date = getDate(rec.created);
                     reportPlots(hdrData, op, date, runID);
                 }
                 let pvalues = new Map(Object.entries(comparison.pvalues));
@@ -178,7 +178,7 @@ function reportPvalues(op, pvalues, runRecs) {
 }
 
 function getDateByID(runRecs, ID) {
-    let rec = runRecs.filter(rec => rec.ID === ID)[0];
-    return getDate(rec.date)
+    let rec = runRecs.filter(rec => rec.id === ID)[0];
+    return getDate(rec.created);
 }
 

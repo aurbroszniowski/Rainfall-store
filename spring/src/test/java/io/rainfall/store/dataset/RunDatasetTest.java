@@ -85,6 +85,14 @@ public class RunDatasetTest {
   }
 
   @Test
+  public void testFindByIds() {
+    long parentId = saveParent();
+    RunRecord record = runDataset.save(parentId, run);
+    List<RunRecord> records = runDataset.findByIds(new long[] { record.getId() });
+    assertThat(records, contains(record));
+  }
+
+  @Test
   public void testSetStatus() {
     long parentId = saveParent();
     long id = runDataset.save(parentId, run)

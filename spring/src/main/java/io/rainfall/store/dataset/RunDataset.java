@@ -38,4 +38,8 @@ public class RunDataset extends ChildDataset<Run, RunRecord, RunRepository, Case
   public Optional<Long> getLastBaselineID(long parentId) {
     return repository().getLastBaselineID(parentId);
   }
+
+  public List<RunRecord> findByIds(long[] ids) {
+    return repository().findByIds(ids);
+  }
 }

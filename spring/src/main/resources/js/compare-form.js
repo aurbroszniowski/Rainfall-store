@@ -28,12 +28,12 @@ function showRuns(runs) {
     runsBox.empty();
     if (runs.length > 0) {
         let runsByDateReverse = runs.sort(
-            (a, b) => b.timeStamp - a.timeStamp
+            (a, b) => b.created - a.created
         );
         $.each(runsByDateReverse, i => {
             let rec = runs[i];
-            let ID = rec.ID;
-            let date = getDate(rec.timeStamp);
+            let ID = rec.id;
+            let date = getDate(rec.created);
             let row = runRow(ID, date, rec.value.status, rec.value.baseline);
             runsBox.append(row);
         });
@@ -50,13 +50,13 @@ function runRow(ID, date, status, baseline) {
     let fw = baseline ? 'bold' : 'normal';
     let txt_dec = baseline ? 'text-decoration: underline;' : '';
     let html = `<option
-                value= "${ID}"
-                data-status=${status}
-                style="color:${color}; font-weight: ${fw}; ${txt_dec}"
-                title="Status: ${status.toLowerCase()}"
+                    value= "${ID}"
+                    data-status=${status}
+                    style="color:${color}; font-weight: ${fw}; ${txt_dec}"
+                    title="Status: ${status.toLowerCase()}"
                 >
-            ${date}
-        </option>`;
+                    ${date}
+                </option>`;
     return $.parseHTML(html);
 }
 

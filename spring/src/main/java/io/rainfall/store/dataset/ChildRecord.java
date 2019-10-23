@@ -14,6 +14,7 @@ import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
+public
 class ChildRecord<V, P extends Record<?>> extends Record<V> {
 
   ChildRecord(P parent, V value) {

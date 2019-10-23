@@ -1,0 +1,58 @@
+<!--
+  ~ Copyright (c) 2014-2019 Aurélien Broszniowski
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <div th:insert="~{header}"></div>
+    <title>Client jobs</title>
+</head>
+<body>
+<div class="border summary">
+    <div th:insert="~{util :: home}"></div>
+
+    <h1><a name="summary">Client jobs</a></h1>
+    <table id="jobs_table" border="1" cellpadding="5">
+        <tr>
+            <th>Client number</th>
+            <th>Host</th>
+            <th>Symbolic name</th>
+            <th>Details</th>
+            <th>Completion time</th>
+        </tr>
+        <div th:switch="*{#lists.size(jobs)}">
+            <tr th:case="0">
+                <td colspan="5">No completed jobs yet.</td>
+            </tr>
+            <div th:case="*">
+                <tr valign="top" th:each="job : ${jobs}" th:object="${job}">
+                    <div th:object="${job.value}">
+                        <td align="center">
+                            <a th:text="*{clientNumber}" th:href="@{/jobs/{id}(id=${job.id})}"></a>
+                        </td>
+                        <td th:text="*{host}"></td>
+                        <td th:text="*{symbolicName}"></td>
+                        <td th:text="*{details}" style="white-space:pre-wrap; word-wrap:break-word"></td>
+                    </div>
+                    <td th:include="~{util :: date-format(*{updated})}"></td>
+                </tr>
+            </div>
+        </div>
+
+    </table>
+</div>
+</body>
+</html>

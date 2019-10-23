@@ -1,0 +1,91 @@
+<!--
+  ~ Copyright (c) 2014-2019 Aurélien Broszniowski
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <div th:insert="~{header}"></div>
+
+    <script th:src="@{/lib/plotly-latest.min.js}"></script>
+    <script th:src="@{/report.js}"></script>
+
+    <title>Client job summary</title>
+</head>
+<body>
+<div th:object="${job}">
+
+    <div class="border summary">
+
+        <div th:insert="~{util :: home}"></div>
+
+        <h1><a name="summary">Performance report summary</a></h1>
+        <table border="1" cellpadding="5">
+            <tr>
+                <td>Test run</td>
+                <td>
+                    <a th:href="@{/runs/{id}(id=*{parent.id})}"
+                       th:include="~{util :: date-format(*{parent.created})}"></a>
+                </td>
+            </tr>
+            <tr>
+                <td>Client number</td>
+                <td th:text="*{value.clientNumber}"></td>
+            </tr>
+            <tr>
+                <td>Host</td>
+                <td th:text="*{value.host}"></td>
+            </tr>
+            <tr>
+                <td>Symbolic name</td>
+                <td th:text="*{value.symbolicName}"></td>
+            </tr>
+            <tr style="white-space:pre-wrap; word-wrap:break-word">
+                <td valign="top">Details</td>
+                <td th:text="*{value.details}"></td>
+            </tr>
+            <tr>
+                <td>Completion time</td>
+                <td th:include="~{util :: date-format(*{updated})}"></td>
+            </tr>
+        </table>
+        <br/>
+
+        <div th:insert="~{reports}"></div>
+
+    </div>
+    <br/>
+
+    <div class="border summary">
+        <h1><a name="tps">Monitor log reports</a></h1>
+        <table id="stats_table"></table>
+        <script>
+                    $(document).ready(function() {
+                        let url = '[( @{/runs/{id}/stats/{host} #stats_table (id=*{parent.id}, host=*{value.host})} )]';
+                        $('#stats_table').load(url, format);
+                    });
+
+        </script>
+    </div>
+    <br/>
+
+    <script>
+                $(document).ready(reportJob('[(*{id})]'));
+
+    </script>
+
+</div>
+</body>
+</html>

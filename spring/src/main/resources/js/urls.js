@@ -17,10 +17,6 @@ function setHref() {
     $(this).attr("href", url);
 }
 
-function getRunsFormURL(ID) {
-    return base + "/cases/" + ID + "/runs #run_table"
-}
-
 function getRunsListURL(ID) {
     return base + "/cases/" + ID + "/runs/json"
 }
@@ -31,26 +27,6 @@ function getRunURL(ID) {
 
 function getBaselineStatusURL(ID) {
     return base + "/runs/" + ID + "/baseline";
-}
-
-function getJobURL(ID) {
-    return base + "/jobs/" + ID;
-}
-
-function getJobsTableURL(ID) {
-    return base + "/runs/" + ID + "/jobs #jobs_table"
-}
-
-function getStatsURL(ID) {
-    return base + "/stats/" + ID;
-}
-
-function getStatsTableURL(ID) {
-    return base + "/runs/" + ID + "/stats #stats_table"
-}
-
-function getJobStatsTableURL(ID, host) {
-    return base + "/runs/" + ID + "/stats/" + host + " #stats_table"
 }
 
 function getOutputsURL(ID) {

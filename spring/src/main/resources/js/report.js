@@ -4,7 +4,7 @@ function reportJob(jobID) {
             var rec = list[i];
             var op = rec.value.operation;
             addTabs(op);
-            getHdrData(rec.ID, function(hdrData) {
+            getHdrData(rec.id, function(hdrData) {
                 reportAll(hdrData, op);
             });
         });

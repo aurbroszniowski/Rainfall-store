@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 interface RunRepository extends ChildRepository<RunRecord> {
@@ -20,4 +21,7 @@ interface RunRepository extends ChildRepository<RunRecord> {
   @Query(value = "select max(id) from RunRecord r where " +
                  "r.value.baseline = true and r.parent.id = :parentId")
   Optional<Long> getLastBaselineID(@Param("parentId") long parentId);
+
+  @Query(value = "select r from RunRecord r where r.id in :ids")
+  List<RunRecord> findByIds(@Param("ids") long[] ids);
 }
