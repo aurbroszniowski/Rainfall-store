@@ -5,6 +5,8 @@ import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class CaseDataset extends Dataset<CaseRecord, CaseRepository> {
 
@@ -20,5 +22,9 @@ public class CaseDataset extends Dataset<CaseRecord, CaseRepository> {
 
   public void setDescription(long id, String description) {
     repository().setDescription(id, description);
+  }
+
+  public Optional<CaseRecord> findByName(String caseName) {
+    return repository().findByValueName(caseName);
   }
 }

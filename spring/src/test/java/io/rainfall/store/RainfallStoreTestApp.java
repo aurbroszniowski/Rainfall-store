@@ -18,6 +18,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 import static io.rainfall.store.values.Run.Status.COMPLETE;
 import static io.rainfall.store.values.Run.Status.INCOMPLETE;
 
+@Profile("dev")
 @SpringBootApplication
 @SuppressWarnings("unassigned")
 public class RainfallStoreTestApp {
