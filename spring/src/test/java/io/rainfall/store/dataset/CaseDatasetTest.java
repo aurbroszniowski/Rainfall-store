@@ -47,7 +47,7 @@ public class CaseDatasetTest {
         .map(CaseRecord::getValue)
         .get();
     assertThat(storedValue.getName(), is("No name"));
-    assertThat(storedValue.getDescription(), is("No description"));
+    assertThat(storedValue.getDescription(), is(""));
   }
 
   @Test

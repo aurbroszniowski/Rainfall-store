@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <div th:insert="~{header}"></div>
+    <script th:src="@{/compare-report.js}"></script>
+    <script th:src="@{/baselines.js}"></script>
+    <title>Runs</title>
+</head>
+<body>
+<div class="border summary">
+    <div th:insert="~{util :: home}"></div>
+
+    <table border="1" cellpadding="5" id="run_table">
+        <tr>
+            <th>Created</th>
+            <th>Terracotta version</th>
+            <th>Class name</th>
+            <th>Git revision checksum</th>
+            <th>Status</th>
+            <th>Baseline</th>
+            <th>Updated</th>
+        </tr>
+        <div th:switch="*{#lists.size(runs)}">
+
+            <tr th:case="0">
+                <td colspan="7">No runs yet.</td>
+            </tr>
+
+            <div th:case="*">
+                <tr th:each="run: ${runs}" th:object="${run}">
+                    <td>
+                        <a th:include="~{util :: date-format(*{created})}" th:href="@{/runs/{id}(id=*{id})}"></a>
+                    </td>
+                    <div th:object="${run.value}">
+                        <td th:text="*{version}"></td>
+                        <td th:text="*{className}"></td>
+                        <td th:text="*{checksum}"></td>
+                        <td th:text="*{status}"></td>
+                        <td align="center">
+                            <div th:insert="~{util :: baseline-check-box}"></div>
+                        </td>
+                    </div>
+                    <td th:include="~{util :: date-format(*{updated})}"></td>
+                </tr>
+            </div>
+        </div>
+    </table>
+</div>
+</body>
+</html>

@@ -34,6 +34,5 @@ public class Run {
   private final Status status = Status.UNKNOWN;
 
   @Builder.Default
-  @NonNull
   private final boolean baseline = false;
 }

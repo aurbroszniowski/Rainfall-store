@@ -45,14 +45,13 @@
     }
 </style>
 
-<script src="{{context-path}}/lib/jquery.min.js"></script>
-<script src="{{context-path}}/dates.js"></script>
-<script src="{{context-path}}/urls.js"></script>
-<script src="{{context-path}}/ui.js"></script>
+<script th:src="@{/lib/jquery.min.js}"></script>
+<script th:src="@{/dates.js}"></script>
+<script th:src="@{/urls.js}"></script>
+<script th:src="@{/ui.js}"></script>
 <script>
     function format() {
         setHrefs();
-        //formatDates();
     }
     $(document).ready(format);
 </script>

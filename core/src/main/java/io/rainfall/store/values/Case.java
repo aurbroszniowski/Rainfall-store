@@ -19,5 +19,5 @@ public class Case {
 
   @NonNull
   @Builder.Default
-  private final String description = "No description";
+  private final String description = "";
 }

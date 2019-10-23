@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+
+<div th:fragment="home">
+    <p>
+        <a th:href="@{/}">Home</a>
+    </p>
+</div>
+
+<div th:fragment="baseline-check-box">
+    <input
+            type="checkbox"
+            class="baseline-check"
+            th:data-id="${run.id}"
+            th:checked="*{baseline}"
+            onclick="toggleBaseline(event)"
+    />
+</div>
+
+<span th:fragment="date-format (date)">
+        <span th:text="${#dates.format(date, 'dd MMM yyyy HH:mm:ss zzz')}">...</span>
+    </span>
+</body>
+</html>

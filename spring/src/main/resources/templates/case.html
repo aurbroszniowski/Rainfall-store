@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+    <div th:insert="~{header}"></div>
+    <script th:src="@{/compare-report.js}"></script>
+    <script th:src="@{/baselines.js}"></script>
+    <title th:text="${case.value.name}"></title>
+</head>
+<body>
+<div class="border summary" id="panel">
+    <div th:insert="~{util :: home}"></div>
+
+    <div th:object="${case}">
+        <h1 th:text="*{value.name}"></h1>
+
+        <div th:if="*{not #strings.isEmpty(value.description)}">
+            <h2>Description:</h2>
+            <p th:text="*{value.description}" style="white-space:pre-wrap; word-wrap:break-word"></p>
+        </div>
+
+        <h3>Created: <span th:include="~{util :: date-format(*{created})}"></span></h3>
+        <h3>Updated: <span th:include="~{util :: date-format(*{updated})}"></span></h3>
+
+        <table id="run_table"></table>
+
+        <script th:inline="javascript">
+                    $(document).ready(() => {
+                        let url = '[( @{/cases/{id}/runs #run_table(id=*{id})} )]';
+                        $('#run_table').load(url, () => {
+                            format();
+                        });
+                    });
+
+        </script>
+    </div>
+</div>
+</body>
+</html>

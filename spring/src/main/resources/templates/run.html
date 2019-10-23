@@ -1,52 +1,69 @@
 <!DOCTYPE html>
-<html>
-<head lang="en">
-    {{> header}}
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <div th:insert="~{header}"></div>
 
-    <script src="/lib/plotly-latest.min.js"></script>
-    <script src="/report.js"></script>
+    <script th:src="@{/lib/plotly-latest.min.js}"></script>
+    <script th:src="@{/report.js}"></script>
+    <script th:src="@{/baselines.js}"></script>
 
     <title>Test run summary</title>
 </head>
 <body>
-    {{#run}}
+<div th:object="${run}">
     <div class="border summary">
-        {{>home}}
+        <div th:insert="~{util :: home}"></div>
+
         <h1><a name="summary">Test run summary</a></h1>
         <table border="1" cellpadding="5">
             <tr>
                 <td>Test case</td>
-                <td><a href="{{context-path}}/cases/{{parent.id}}">{{parent.value.name}}</a></td>
+                <td>
+                    <a th:href="@{/cases/{id}(id=*{parent.id})}" th:text="*{parent.value.name}"></a>
+                </td>
             </tr>
             <tr>
                 <td>Created</td>
-                <td>{{>created}}</td>
+                <td th:include="~{util :: date-format(*{created})}"></td>
             </tr>
-            {{#value}}
+
+            <div th:object="${run.value}">
+
                 <tr>
                     <td>Terracotta version</td>
-                    <td>{{version}}</td>
+                    <td th:text="*{version}"></td>
                 </tr>
                 <tr>
                     <td>Class name</td>
-                    <td>{{className}}</td>
+                    <td th:text="*{className}"></td>
                 </tr>
                 <tr>
                     <td>Git revision checksum</td>
-                    <td>{{checksum}}</td>
+                    <td th:text="*{checksum}"></td>
                 </tr>
                 <tr>
                     <td>Status</td>
-                    <td>{{status}}</td>
+                    <td th:text="*{status}"></td>
                 </tr>
                 <tr>
-                    <td>Updated</td>
-                    <td>{{>updated}}</td>
+                    <td>Baseline</td>
+                    <td align="center">
+                        <div th:insert="~{util :: baseline-check-box}"></div>
+                    </td>
                 </tr>
-            {{/value}}
+
+            </div>
+
+            <tr>
+                <td>Updated</td>
+                <td th:include="~{util :: date-format(*{updated})}"></td>
+            </tr>
+
         </table>
         <br>
-        {{>reports}}
+
+        <div th:insert="~{reports}"></div>
+
     </div>
     <br/>
 
@@ -55,9 +72,10 @@
         <table id="jobs_table"></table>
         <script>
             $(document).ready(function() {
-                var url = getJobsTableURL('{{id}}');
+                let url = '[( @{/runs/{id}/jobs #jobs_table(id=*{id})} )]';
                 $('#jobs_table').load(url, format);
             });
+
         </script>
     </div>
     <br/>
@@ -67,16 +85,18 @@
         <table id="stats_table"></table>
         <script>
             $(document).ready(function() {
-                var url = getStatsTableURL('{{id}}');
+                let url = '[( @{/runs/{id}/stats #stats_table(id=*{id})} )]';
                 $('#stats_table').load(url, format);
             });
+
         </script>
     </div>
     <br/>
 
     <script>
-        $(document).ready(reportAggregate("{{id}}"));
+            $(document).ready(reportAggregate('[(*{id})]'));
+
     </script>
-    {{/run}}
+</div>
 </body>
 </html>

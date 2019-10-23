@@ -19,10 +19,13 @@ package io.rainfall.store.controllers;
 import io.rainfall.store.dataset.RunDataset;
 import io.rainfall.store.dataset.RunRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -55,6 +58,16 @@ public class RunController {
   public ModelAndView getRun(ModelMap model, @PathVariable long id) {
     model.addAttribute("run", getRecord(id));
     return new ModelAndView("run", model);
+  }
+
+  @PostMapping("/runs/{id}/baseline")
+  public ResponseEntity<?> setBaseline(@PathVariable long id,
+                                       @RequestBody String booleanBody) {
+    //bug in jackson?
+    boolean baseline = Boolean.valueOf(
+        booleanBody.replaceAll("=$", ""));
+    dataset.setBaseline(id, baseline);
+    return ResponseEntity.ok(baseline);
   }
 
   private RunRecord getRecord(Long id) {
