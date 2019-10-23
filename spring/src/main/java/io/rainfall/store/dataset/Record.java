@@ -26,7 +26,7 @@ import javax.persistence.PreUpdate;
 public class Record<V> {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
 
   private Date created;

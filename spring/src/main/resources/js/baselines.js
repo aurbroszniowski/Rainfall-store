@@ -1,10 +1,17 @@
-function toggleBaseline(o) {
-    let checked = o.checked;
+function toggleBaseline(evt) {
+    let source = event.target || event.srcElement;
+    let checked = source.checked;
     let ok = confirm("Do you want to permanently change the baseline status to " + checked + "?");
     if (ok) {
-        let ID = o.getAttribute('data-id');
+        let ID = source.getAttribute('data-id');
         let url = getBaselineStatusURL(ID);
-        $.post(url, JSON.stringify(checked));
+        $.ajax({
+            'type': 'POST',
+            'url': url,
+            'contentType': 'application/json',
+            'data': JSON.stringify(checked),
+            'dataType': 'json',
+        });
     } else {
         evt.preventDefault();
     }

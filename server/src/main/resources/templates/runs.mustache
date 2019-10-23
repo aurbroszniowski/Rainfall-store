@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    {{> header}}
+    <script src="/compare-report.js"></script>
+    <script src="/baselines.js"></script>
+    <title>Runs</title>
+</head>
+<body>
+    <div class="border summary">
+        {{>home}}
+        <table border="1" cellpadding="5" id="run_table">
+            <tr>
+                <th>Run date</th>
+                <th>Terracotta version</th>
+                <th>Class name</th>
+                <th>Git revision checksum</th>
+                <th>Status</th>
+                <th>Baseline</th>
+            </tr>
+            {{#.}}
+                <tr>
+                    <td>
+                        <a {{>idlink}}='getRunURL'>{{>date}}</a>
+                    </td>
+                    {{#value}}
+                        <td>{{version}}</td>
+                        <td>{{className}}</td>
+                        <td>{{checksum}}</td>
+                        <td>{{status}}</td>
+                        <td align="center">
+                            <input type="checkbox" class="baseline-check" data-id="{{ID}}" data-baseline="{{baseline}}">
+                        </td>
+                    {{/value}}
+                </tr>
+            {{/.}}
+            {{^.}}<tr><td colspan="5">No runs yet.</td></tr>{{/.}}
+        </table>
+    </div>
+    <script>
+        $(document).ready(setBaselineChecks());
+    </script>
+</body>
+</html>

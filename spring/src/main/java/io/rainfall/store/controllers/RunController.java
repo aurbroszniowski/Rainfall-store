@@ -1,23 +1,11 @@
-/*
- * Copyright (c) 2014-2019 Aurélien Broszniowski
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package io.rainfall.store.controllers;
 
+import io.rainfall.store.dataset.CaseDataset;
+import io.rainfall.store.dataset.CaseRecord;
+import io.rainfall.store.dataset.Record;
 import io.rainfall.store.dataset.RunDataset;
 import io.rainfall.store.dataset.RunRecord;
+import io.rainfall.store.values.Run;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -30,48 +18,66 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
+import java.util.Optional;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Controller
-public class RunController {
+@SuppressWarnings("unused")
+public class RunController extends ChildController<Run, RunRecord, CaseRecord, RunDataset> {
 
-  private final RunDataset dataset;
+  @Autowired
+  CaseDataset caseDataset;
 
   @Autowired
   RunController(RunDataset dataset) {
-    this.dataset = dataset;
+    super(dataset, "Run", "/runs");
+  }
+
+  @PostMapping("/runs/{caseName}")
+  public ResponseEntity<?> postRun(@PathVariable String caseName, @RequestBody Run run) {
+    Optional<CaseRecord> caseRecord = caseDataset.findByName(caseName);
+    Long caseId = caseRecord.map(Record::getId)
+        .orElseThrow(() -> new IllegalArgumentException("Case not found: " + caseName));
+    return super.post(caseId, run);
   }
 
   @GetMapping({ "/cases/{parentId}/runs" })
   public ModelAndView getRunsByCaseID(ModelMap model, @PathVariable long parentId) {
-    List<RunRecord> runs = dataset.findByParentId(parentId);
-    model.addAttribute("runs", runs);
-    return new ModelAndView("runs", model);
+    return getByParentId(model, parentId);
   }
 
   @GetMapping({ "/cases/{parentId}/runs/json" })
   @ResponseBody
   public List<RunRecord> listRunsByCaseID(@PathVariable long parentId) {
-    return dataset.findByParentId(parentId);
+    return dataset().findByParentId(parentId);
   }
 
   @GetMapping({ "/runs/{id}" })
   public ModelAndView getRun(ModelMap model, @PathVariable long id) {
-    model.addAttribute("run", getRecord(id));
-    return new ModelAndView("run", model);
+    return get(model, id);
   }
 
-  @PostMapping("/runs/{id}/baseline")
+  @PostMapping(path = "/runs/{id}/baseline", consumes = APPLICATION_JSON_VALUE)
   public ResponseEntity<?> setBaseline(@PathVariable long id,
-                                       @RequestBody String booleanBody) {
-    //bug in jackson?
-    boolean baseline = Boolean.valueOf(
-        booleanBody.replaceAll("=$", ""));
-    dataset.setBaseline(id, baseline);
+                                       @RequestBody boolean baseline) {
+    dataset().setBaseline(id, baseline);
     return ResponseEntity.ok(baseline);
   }
 
-  private RunRecord getRecord(Long id) {
-    return dataset.getRecord(id)
-        .orElseThrow(() -> new IllegalArgumentException("Run not found: " + id));
+  @PostMapping(path = "/runs/{id}/status")
+  public ResponseEntity<?> setStatus(@PathVariable long id,
+                                     @RequestBody String statusName) {
+    Run.Status status = Run.Status.valueOf(statusName);
+    dataset().setStatus(id, status);
+    return ResponseEntity.ok(status);
+  }
+
+  @GetMapping({ "/compare/{sids}" })
+  public ModelAndView getCompareReport(ModelMap model, @PathVariable String sids) {
+    long[] ids = parseIds(sids);
+    List<RunRecord> runs = dataset().findByIds(ids);
+    model.addAttribute("runs", runs);
+    return new ModelAndView("compare-report", model);
   }
 }

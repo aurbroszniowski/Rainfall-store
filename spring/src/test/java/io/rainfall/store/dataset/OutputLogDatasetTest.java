@@ -1,6 +1,7 @@
 package io.rainfall.store.dataset;
 
 import io.rainfall.store.RainfallStoreApp;
+import io.rainfall.store.Utils;
 import io.rainfall.store.data.Payload;
 import io.rainfall.store.values.Case;
 import io.rainfall.store.values.Job;
@@ -17,8 +18,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -49,6 +53,8 @@ public class OutputLogDatasetTest {
       .symbolicName("localhost-1")
       .details("details")
       .build();
+
+  private long runId;
 
   @Test
   public void testSaveWithNonExistentParent() {
@@ -95,14 +101,52 @@ public class OutputLogDatasetTest {
   @Test
   public void testFindByParentId() {
     long parentId = saveParent();
-    OutputLog outputLog = OutputLog.builder()
-        .operation("MISS")
-        .format("hlog")
-        .payload(Payload.raw("xxx"))
-        .build();
+    OutputLog outputLog = forOp("MISS");
     OutputLogRecord childRecord = outputLogDataset.save(parentId, outputLog);
     List<OutputLogRecord> children = outputLogDataset.findByParentId(parentId);
     assertThat(children, contains(childRecord));
+  }
+
+  @Test
+  public void testFindOperationsByRunId() {
+    long parentId = saveParent();
+    Stream.of("GET", "GET", "MISS")
+        .map(this::forOp)
+        .forEach(op -> outputLogDataset.save(parentId, op));
+    List<String> records = outputLogDataset
+        .findOperationsByRunId(runId);
+    assertThat(records, containsInAnyOrder("MISS", "GET"));
+  }
+
+  @Test
+  public void testFindOutputLogsByRunIdAndOperation() {
+    long parentId = saveParent();
+    OutputLog outputLog = forOp("MISS");
+    OutputLogRecord record = outputLogDataset.save(parentId, outputLog);
+    List<Payload> records = outputLogDataset
+        .findOutputLogsByRunIdAndOperation(runId, "MISS");
+    assertThat(records, contains(record.getPayloadRecord().getValue()));
+  }
+
+  @Test
+  public void testGetCommonOperationsForRuns() {
+    Case testCase = Case.builder().build();
+    long caseId = caseDataset.save(testCase).getId();
+
+    Run run = Run.builder().build();
+
+    long runId1 = runDataset.save(caseId, run).getId();
+    long jobId1 = jobDataset.save(runId1, job).getId();
+    outputLogDataset.save(jobId1, forOp("GET"));
+    outputLogDataset.save(jobId1, forOp("MISS"));
+
+    long runId2 = runDataset.save(caseId, run).getId();
+    long jobId2 = jobDataset.save(runId2, job).getId();
+    outputLogDataset.save(jobId2, forOp("GET"));
+
+    Set<String> commonOps = outputLogDataset
+        .findCommonOperationsForRuns(runId1, runId2);
+    assertThat(commonOps, contains("GET"));
   }
 
   private long saveParent() {
@@ -110,8 +154,16 @@ public class OutputLogDatasetTest {
     long caseId = caseDataset.save(testCase).getId();
 
     Run run = Run.builder().build();
-    long runId = runDataset.save(caseId, run).getId();
+    runId = runDataset.save(caseId, run).getId();
 
     return jobDataset.save(runId, job).getId();
+  }
+
+  private OutputLog forOp(String op) {
+    return OutputLog.builder()
+        .operation(op)
+        .format("hlog")
+        .payload(Payload.raw("xxx"))
+        .build();
   }
 }

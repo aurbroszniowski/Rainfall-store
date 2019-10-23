@@ -1,19 +1,3 @@
-/*
- * Copyright (c) 2014-2019 Aurélien Broszniowski
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package io.rainfall.store.controllers;
 
 import io.rainfall.store.dataset.CaseDataset;
@@ -29,13 +13,13 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import static java.util.Collections.nCopies;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.StreamSupport.stream;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
-import static org.springframework.http.HttpStatus.SEE_OTHER;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -43,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class CaseControllerIT extends ControllerIT {
 
+  @SuppressWarnings("unused")
   @Autowired
   private CaseDataset caseDataset;
 
@@ -53,16 +38,19 @@ public class CaseControllerIT extends ControllerIT {
 
   @Test
   public void testRoot() throws Exception {
-    testGetCases("/");
+    HttpServletResponse response = mvc.perform(get("/"))
+        .andExpect(status().isFound())
+        .andReturn()
+        .getResponse();
+    assertThat(
+        response.getHeader("Location"),
+        startsWith("/cases")
+    );
   }
 
   @Test
   public void testGetCases() throws Exception {
-    testGetCases("/cases");
-  }
-
-  private void testGetCases(String url) throws Exception {
-    mvc.perform(get(url))
+    mvc.perform(get("/cases"))
         .andExpect(status().isOk())
         .andExpect(content().contentType(DEFAULT_TEXT_HTML))
         .andExpect(content().string(containsAll(
@@ -95,20 +83,67 @@ public class CaseControllerIT extends ControllerIT {
         .param("name", caseName)
         .param("description", testCase.getDescription());
     HttpServletResponse response = mvc.perform(post)
+        .andExpect(status().isSeeOther())
         .andReturn()
         .getResponse();
     assertThat(
-        response.getStatus(),
-        is(SEE_OTHER.value())
-    );
-    assertThat(
         response.getHeader("Location"),
-        endsWith("/cases/" + caseName)
+        matchesPattern(".*/cases/[0-9]+")
     );
     Iterable<CaseRecord> records = caseDataset.getRecords();
     Set<Case> all = stream(records.spliterator(), false)
         .map(Record::getValue)
         .collect(toSet());
     assertThat(all, contains(testCase));
+  }
+
+  @Transactional
+  @Test
+  public void testPostBlankName() throws Exception {
+    RequestBuilder post = post("/cases")
+        .param("name", "")
+        .param("description", "Description");
+    expectErrorPage(post, "/cases");
+  }
+
+  @Transactional
+  @Test
+  public void testPostTooLongName() throws Exception {
+    String name = String.join("", nCopies(256, "n"));
+    RequestBuilder post = post("/cases")
+        .param("name", name)
+        .param("description", "Description");
+    expectErrorPage(post, "/cases");
+  }
+
+  @Transactional
+  @Test
+  public void testPostTooLongDescription() throws Exception {
+    String description = String.join("", nCopies(1025, "n"));
+    RequestBuilder post = post("/cases")
+        .param("name", "name")
+        .param("description", description);
+    expectErrorPage(post, "/cases");
+  }
+
+  @Transactional
+  @Test
+  public void testPostNoName() throws Exception {
+    RequestBuilder post = post("/cases")
+        .param("description", "Description");
+    expectErrorPage(post, "/cases");
+  }
+
+  @Transactional
+  @Test
+  public void testGetCompareForm() throws Exception {
+    caseDataset.save(testCase);
+    mvc.perform(get("/compare"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(DEFAULT_TEXT_HTML))
+        .andExpect(content().string(containsAll(
+            "Select test runs to compare",
+            "Test1"
+        )));
   }
 }
