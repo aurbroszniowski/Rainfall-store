@@ -23,6 +23,14 @@ public class Payload {
     return new Payload(data, RAW, data.length);
   }
 
+  /**
+   * For Spring.
+   */
+  @SuppressWarnings("unused")
+  public Payload() {
+    this(new byte[] {}, CompressionFormat.RAW, 0);
+  }
+
   public static Payload of(byte[] data, CompressionFormat format, int originalLength) {
     return new Payload(data, format, originalLength);
   }
