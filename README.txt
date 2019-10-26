@@ -11,7 +11,7 @@ Then integrate the test code using client side API described here:
 client/src/main/asciidocs/ClientAPI.txt
 
 The REST API is described here:
-server/src/main/asciidocs/PerfController.txt
+server/src/main/asciidocs/StoreController.txt
 
 The data model is described here:
 server/src/main/asciidocs/rainfall-store.txt

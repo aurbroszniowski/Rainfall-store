@@ -29,10 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.terracottatech.qa.angela.client.filesystem.TransportableFile;
-import com.terracottatech.qa.angela.common.clientconfig.ClientId;
-import com.terracottatech.qa.angela.common.clientconfig.ClientSymbolicName;
-
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -41,7 +37,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static io.rainfall.store.client.DefaultStoreClientService.getPreviousSuccessfulCommit;
 import static io.rainfall.store.core.TestRun.Status.COMPLETE;
@@ -52,9 +47,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SuppressWarnings("SameParameterValue")
 public abstract class AbstractStoreClientServiceTest {
@@ -135,26 +127,6 @@ public abstract class AbstractStoreClientServiceTest {
 
   abstract void checkRuns(String caseName, TestRun expectedRun);
 
-  @Test
-  public void testAddClientJob() {
-    addTestCase("Test1");
-    long runId = service.addRun("Test1", CLASS_NAME, VERSION);
-
-    String outputPath = Paths.get(OUTPUTS_URL.getPath(), "1_scenario")
-        .toString();
-    ClientId clientId = new ClientId(new ClientSymbolicName("localhost-1"),
-        "localhost");
-    long jobId = service.addClientJob(runId, 1, clientId, DETAILS, outputPath);
-
-    assertThat(jobId, is(1L));
-    checkClientJobs(CLIENT_JOB);
-
-    List<OperationOutput> expectedOutputs = Stream.of("GET", "MISS")
-        .map(operation -> getOutput(outputPath, operation))
-        .collect(Collectors.toList());
-    checkOutputs(expectedOutputs);
-  }
-
   abstract void checkClientJobs(ClientJob expectedClientJob);
 
   private OperationOutput getOutput(String path, String operation) {
@@ -192,74 +164,11 @@ public abstract class AbstractStoreClientServiceTest {
   }
 
   @Test
-  public void testAddClientJobOutputsNotFound() {
-    addTestCase("Test1");
-    long runId = service.addRun("Test1", CLASS_NAME, VERSION);
-
-    String outputPath = Paths.get(OUTPUTS_URL.getPath(), "no_such_folder")
-        .toString();
-    ClientId clientId = new ClientId(new ClientSymbolicName("localhost-1"),
-        "localhost");
-    try {
-      service.addClientJob(runId, 1, clientId, DETAILS, outputPath);
-      fail();
-    } catch (IllegalStateException e) {
-      //job added despite output uploads failed
-      checkClientJobs(CLIENT_JOB);
-    }
-  }
-
-  @Test
-  public void testAddMetrics() throws IOException {
-    addTestCase("Test1");
-    long runId = service.addRun("Test1", CLASS_NAME, VERSION);
-
-    String fileName = "vmstat.log";
-    Path metricsFile = Paths.get(OUTPUTS_URL.getPath(), fileName);
-    byte[] content = Files.readAllBytes(metricsFile);
-
-    TransportableFile transFile = mock(TransportableFile.class);
-    when(transFile.getName()).thenReturn(fileName);
-    when(transFile.getContent()).thenReturn(content);
-
-    long logId = service.addMetrics(runId, "localhost", transFile);
-    assertThat(logId, is(1L));
-
-    Payload payload = compressionService.compress(content);
-    StatsLog expectedLog = StatsLog.builder()
-        .payload(payload)
-        .host("localhost")
-        .build();
-    checkLogs(expectedLog);
-  }
-
-  @Test
   public void testCheckRegressionWithNoBaseline() {
     addTestCase("Test1");
     long runId = service.addRun("Test1", CLASS_NAME, VERSION);
     ChangeReport changeReport = service.checkRegression(runId, 0.0);
     assertThat(changeReport, is(new ChangeReport(0.0)));
-  }
-
-  @Test
-  public void testCheckRegression() {
-    addTestCase("Test1");
-
-    String outputPath = Paths.get(OUTPUTS_URL.getPath(), "1_scenario")
-        .toString();
-    ClientId clientId = new ClientId(new ClientSymbolicName("localhost-1"),
-        "localhost");
-
-    long baselineId = service.addRun("Test1", CLASS_NAME, VERSION);
-    service.addClientJob(baselineId, 1, clientId, DETAILS, outputPath);
-    setBaseline(baselineId);
-
-    long runId = service.addRun("Test1", CLASS_NAME, VERSION);
-    service.addClientJob(runId, 1, clientId, DETAILS, outputPath);
-
-    double threshold = 0.5;
-    ChangeReport changeReport = service.checkRegression(runId, threshold);
-    checkChangeReport(changeReport, threshold);
   }
 
   abstract void checkChangeReport(ChangeReport changeReport, double threshold);

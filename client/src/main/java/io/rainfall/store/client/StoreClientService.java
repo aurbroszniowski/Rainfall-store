@@ -19,11 +19,6 @@ package io.rainfall.store.client;
 import io.rainfall.store.core.ChangeReport;
 import io.rainfall.store.core.TestRun;
 
-import com.terracottatech.qa.angela.client.filesystem.TransportableFile;
-import com.terracottatech.qa.angela.common.clientconfig.ClientId;
-
-import java.util.List;
-
 @SuppressWarnings("WeakerAccess")
 public interface StoreClientService {
 
@@ -67,9 +62,9 @@ public interface StoreClientService {
    * @param outputPath   Directory containing output files, e.g. HDR log files.
    * @return Client job ID.
    */
-  default long addClientJob(long runId, int clientNumber, ClientId clientId, List<String> details, String outputPath) {
-    return 0L;
-  }
+//  default long addClientJob(long runId, int clientNumber, ClientId clientId, List<String> details, String outputPath) {
+//    return 0L;
+//  }
 
 
   /**
@@ -82,9 +77,9 @@ public interface StoreClientService {
    * @param transportableFile {@link TransportableFile} containing a monitor output.
    * @return Monitor log output ID.
    */
-  default long addMetrics(long runId, String host, TransportableFile transportableFile) {
-    return 0L;
-  }
+//  default long addMetrics(long runId, String host, TransportableFile transportableFile) {
+//    return 0L;
+//  }
 
   /**
    * Compare the current run to the baseline, to detect possible
