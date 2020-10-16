@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019 Aurélien Broszniowski
+ * Copyright (c) 2014-2020 Aurélien Broszniowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package io.rainfall.store.client;
 
 import io.rainfall.store.core.ChangeReport;
+import io.rainfall.store.core.ClientJob;
 import io.rainfall.store.core.OperationOutput;
+import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestRun;
 import io.rainfall.store.data.CompressionService;
 import io.rainfall.store.data.Payload;
@@ -27,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -92,6 +95,25 @@ public class DefaultStoreClientService implements StoreClientService {
         });
   }
 
+  @Override
+  public long addClientJob(long runId, int clientNumber, String hostname, String clientName, List<String> details, String outputPath) {
+    try {
+      ClientJob clientJob = ClientJob.builder()
+          .host(hostname)
+          .clientNumber(clientNumber)
+          .symbolicName(clientName)
+          .details(String.join("\n", details))
+          .build();
+      long jobId = writer.addClientJob(runId, clientJob);
+      LOGGER.info("Client job created: ID={}, job={}, run ID = {}.", new Object[] { jobId, clientJob, runId });
+      uploadOutputs(jobId, outputPath);
+      return jobId;
+    } catch (Exception e) {
+      LOGGER.error("Failed to add client job to run {}: {}.", runId, e.getMessage());
+      throw new IllegalStateException("Failed to add client job.", e);
+    }
+  }
+
   private void uploadOutputs(long jobId, String outputPath) {
     File[] files = new File(outputPath).listFiles(
         f -> !f.isDirectory() && f.getName().contains("."));
@@ -123,6 +145,27 @@ public class DefaultStoreClientService implements StoreClientService {
         }
       }
     });
+  }
+
+  @Override
+  public long addMetrics(long runId, String host, String filename, byte[] content) {
+    try {
+
+      String fileNameBase = filename.replaceAll("\\.log$", "");
+      Payload payload = compressionService.compress(content);
+      StatsLog statsLog = StatsLog.builder()
+          .host(host)
+          .type(fileNameBase)
+          .payload(payload)
+          .build();
+      long logId = writer.addStatsLog(runId, statsLog);
+      LOGGER.info("Stats log created: ID={}, log = {}, run ID = {}.", new Object[] {
+          logId, statsLog, runId });
+      return logId;
+    } catch (IOException e) {
+      LOGGER.error("Failed to add stats log to run {}: {}.", runId, e.getMessage());
+      throw new IllegalStateException("Failed to add stats log.", e);
+    }
   }
 
   @Override

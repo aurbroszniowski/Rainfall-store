@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019 Aurélien Broszniowski
+ * Copyright (c) 2014-2020 Aurélien Broszniowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package io.rainfall.store.client;
 
 import io.rainfall.store.core.ChangeReport;
 import io.rainfall.store.core.TestRun;
+
+import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public interface StoreClientService {
@@ -57,14 +59,15 @@ public interface StoreClientService {
    *
    * @param runId        current test run ID.
    * @param clientNumber number of the client machine.
-   * @param clientId     {@link ClientId} of the client.
+   * @param hostname     hostname of the client.
+   * @param clientName   unique name of the client on the host.
    * @param details      Multiline description of the client job.
    * @param outputPath   Directory containing output files, e.g. HDR log files.
    * @return Client job ID.
    */
-//  default long addClientJob(long runId, int clientNumber, ClientId clientId, List<String> details, String outputPath) {
-//    return 0L;
-//  }
+  default long addClientJob(long runId, int clientNumber, String hostname, String clientName, List<String> details, String outputPath) {
+    return 0L;
+  }
 
 
   /**
@@ -72,14 +75,15 @@ public interface StoreClientService {
    * This should be called on the machine where the monitor is running, after
    * the completion of all client jobs.
    *
-   * @param runId             current test run ID.
-   * @param host              host name of the machine where the monitor is running.
-   * @param transportableFile {@link TransportableFile} containing a monitor output.
+   * @param runId    current test run ID.
+   * @param host     host name of the machine where the monitor is running.
+   * @param filename filename of the monitor output.
+   * @param content  content of the monitor output.
    * @return Monitor log output ID.
    */
-//  default long addMetrics(long runId, String host, TransportableFile transportableFile) {
-//    return 0L;
-//  }
+  default long addMetrics(long runId, String host, String filename, byte[] content) {
+    return 0L;
+  }
 
   /**
    * Compare the current run to the baseline, to detect possible
