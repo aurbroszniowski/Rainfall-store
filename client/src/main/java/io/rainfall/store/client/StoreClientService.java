@@ -48,6 +48,7 @@ public interface StoreClientService {
    *
    * @param runId  current test run ID.
    * @param status updated status.
+   * @return true if test was completed successfully
    */
   default boolean setStatus(long runId, TestRun.Status status) {
     return false;
@@ -97,7 +98,7 @@ public interface StoreClientService {
    *
    * @param runId     current test run ID.
    * @param threshold threshold p-value.
-   * @return {@ChangeReport} representing the operations for which
+   * @return ChangeReport representing the operations for which
    * the test p-value is below the given threshold.
    */
   default ChangeReport checkRegression(long runId, double threshold) {

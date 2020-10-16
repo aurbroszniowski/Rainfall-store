@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2019 Aurélien Broszniowski
+ * Copyright (c) 2014-2020 Aurélien Broszniowski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class ChangeReport {
   /**
    * Baseline ID if it exists.
    *
-   * @return
+   * @return perf test baseline id
    */
   public Optional<Long> getBaselineID() {
     return Optional.of(baselineID);
@@ -64,7 +64,7 @@ public class ChangeReport {
   }
 
   /**
-   * P-values below the {@threshold}, mapped to the
+   * P-values below the threshold, mapped to the
    * corresponding operations.
    *
    * @return map of operations and p-values.
