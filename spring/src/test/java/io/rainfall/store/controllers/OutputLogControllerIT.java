@@ -60,6 +60,7 @@ import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.text.MatchesPattern.matchesPattern;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
@@ -186,7 +187,7 @@ public class OutputLogControllerIT extends ControllerIT {
     Stream.of(hdrData.getStartTimes(), hdrData.getTps(),
         hdrData.getMeans(), hdrData.getErrors())
         .map(List::size)
-        .forEach(size -> MatcherAssert.assertThat(size, is(200)));
+        .forEach(size -> MatcherAssert.assertThat(size, lessThanOrEqualTo(200)));
     MatcherAssert.assertThat(hdrData.getValueAtPercentile(MAX), is(34701311L));
     MatcherAssert.assertThat(hdrData.getPercentilePoints().size(), is(126));
     MatcherAssert.assertThat(hdrData.getPercentileValues().size(), is(126));

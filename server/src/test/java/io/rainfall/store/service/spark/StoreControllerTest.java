@@ -89,6 +89,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertTrue;
 
 public class StoreControllerTest {
@@ -504,7 +505,7 @@ public class StoreControllerTest {
     Stream.of(hdrData.getStartTimes(), hdrData.getTps(),
         hdrData.getMeans(), hdrData.getErrors())
         .map(List::size)
-        .forEach(size -> assertThat(size, is(200)));
+        .forEach(size -> assertThat(size, lessThanOrEqualTo(200)));
     assertThat(hdrData.getValueAtPercentile(MAX), is(34701311L));
     assertThat(hdrData.getPercentilePoints().size(), is(126));
     assertThat(hdrData.getPercentileValues().size(), is(126));
