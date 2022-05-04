@@ -18,6 +18,7 @@
 mavenBuild(
     label: 'perfboard',
     maven_goal_pr: 'clean verify',
+    maven_goal: 'clean package',
     archive_glob: 'deploy.log',
     post_closure: {
         if (env.BRANCH_NAME == 'main') {
