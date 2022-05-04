@@ -20,7 +20,7 @@ mavenBuild(
     maven_goal_pr: 'clean verify',
     archive_glob: 'deploy.log',
     post_closure: {
-        if (env.BRANCH_NAME == 'master') {
+        if (env.BRANCH_NAME == 'main') {
           sh 'sudo bash -xe server/target/classes/deploy.sh'
         }
     }
