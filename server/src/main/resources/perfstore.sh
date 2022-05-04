@@ -12,7 +12,7 @@
 #No additional configuration is required.
 
 #Location of the fat jar file:
-APP_PATH=${rainfall-store_PATH:-/data/rainfall-store}
+APP_PATH=${rainfall_store_path:-/data/rainfall-store}
 echo "Deployment path: ${APP_PATH}"
 
 #Log file
@@ -24,7 +24,7 @@ function start_rainfall-store {
     echo "Jar file: $(ls ${APP_JAR})"
 
     #Properties file to be found in the jar:
-    APP_PROPS=${rainfall-store_PROPS:-prod.props}
+    APP_PROPS=${rainfall_store_props:-prod.props}
     echo "Properties: ${APP_PROPS}"
 
     JAVA_PATH=${JAVA_HOME:-/jdk-zulu-1.8}
