@@ -23,29 +23,32 @@ import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
+import java.io.UncheckedIOException;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Spliterator.ORDERED;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.reducing;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.StreamSupport.stream;
 
 public class HistogramService {
@@ -54,11 +57,6 @@ public class HistogramService {
   private static final int DEFAULT_MAX_DATA_POINTS = 200;
   private static final int N_THREADS = 1;
   private static final int NUM_FIXED_PERCENTILE_POINTS = 10;
-
-  private static final Collector<Histogram, ?, Histogram> SUMMING = reducing(
-      new Histogram(NUMBER_OF_SIGNIFICANT_VALUE_DIGITS),
-      HistogramService::sum
-  );
 
   private final Executor executor = Executors.newFixedThreadPool(N_THREADS);
 
@@ -70,11 +68,7 @@ public class HistogramService {
 
   HdrData readHdrData(Supplier<InputStream> supplier, int maxDataPoints) {
     checkMaxDataPoints(maxDataPoints);
-    return supplyAndGet(
-        () -> readTimeRange(supplier)
-            .map(range -> readHdrDataInRange(supplier, range, maxDataPoints))
-            .orElseGet(this::blankHdrData)
-    );
+    return supplyAndGet(() -> toHdrData(compactTo(readLog(supplier), maxDataPoints)));
   }
 
   private HdrData supplyAndGet(Supplier<HdrData> hdrSupplier) {
@@ -87,45 +81,21 @@ public class HistogramService {
     }
   }
 
-  private HdrData readHdrDataInRange(Supplier<InputStream> supplier, TimeRange range, int maxDataPoints) {
-    List<Histogram> histograms = readLog(supplier, range, maxDataPoints);
-    return toHdrData(histograms);
-  }
-
-  private List<Histogram> readLog(Supplier<InputStream> supplier, TimeRange range, int maxDataPoints) {
-    try (InputStream is = supplier.get()) {
-      return readLog(is, range, maxDataPoints);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private List<Histogram> readLog(InputStream is, TimeRange frame, int maxDataPoints) {
-    double interval = getInterval(frame, maxDataPoints);
-    return histograms(is)
-        .map(TimeEntry::new)
-        .filter(frame::contains)
-        .collect(bucketingThenSumming(frame, interval))
-        .entrySet()
-        .stream()
-        .limit(maxDataPoints)
-        .map(Map.Entry::getValue)
-        .collect(toList());
-  }
-
-  private double getInterval(TimeRange range, int maxDataPoints) {
-    double length = range.length();
-    if (length == 0.0) {
-      throw new IllegalArgumentException("Cannot parse hlog with empty time range: " + range);
-    }
-    return length / maxDataPoints;
+  private Stream<Histogram> readLog(Supplier<InputStream> supplier) {
+    return histograms(supplier.get());
   }
 
   private Stream<Histogram> histograms(InputStream is) {
     HistogramLogReader logReader = new HistogramLogReader(is);
     Iterator<Histogram> iterator = histogramIterator(logReader);
     Spliterator<Histogram> spliterator = Spliterators.spliteratorUnknownSize(iterator, ORDERED);
-    return stream(spliterator, false);
+    return stream(spliterator, false).onClose(() -> {
+      try {
+        is.close();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    });
   }
 
   private Iterator<Histogram> histogramIterator(HistogramLogReader logReader) {
@@ -142,27 +112,13 @@ public class HistogramService {
     };
   }
 
-  private Collector<TimeEntry, ?, Map<Long, Histogram>> bucketingThenSumming(
-      TimeRange frame, double interval) {
-    return groupingBy(
-        timeEntry -> bucketNumber(timeEntry, frame.start, interval),
-        TreeMap::new,
-        mapping(TimeEntry::getHistogram, SUMMING)
-    );
-  }
-
-  private long bucketNumber(TimeEntry timeEntry, long start, double interval) {
-    double div = (timeEntry.time - start) / interval;
-    return (long)div;
-  }
-
-  private HdrData toHdrData(Collection<Histogram> reducedList) {
+  private HdrData toHdrData(Stream<Histogram> reducedList) {
     Histogram total = new Histogram(NUMBER_OF_SIGNIFICANT_VALUE_DIGITS);
     HdrData.Builder builder = HdrData.builder();
-    for (Histogram histogram : reducedList) {
+    reducedList.forEachOrdered(histogram -> {
       addDatapoint(builder, histogram);
       total.add(histogram);
-    }
+    });
     builder.roundedPercentiles(percentiles(total));
     builder.fixedPercentileValues(fixedPercentileValues(total));
     for (HistogramIterationValue value : total.percentiles(5)) {
@@ -173,7 +129,6 @@ public class HistogramService {
   }
 
   private List<Long> fixedPercentileValues(Histogram total) {
-    System.out.println();
     return fixedPercentilePoints(NUM_FIXED_PERCENTILE_POINTS)
         .map(n -> n * 100)
         .map(total::getValueAtPercentile)
@@ -210,9 +165,7 @@ public class HistogramService {
 
   HdrData aggregateHdrData(List<Supplier<InputStream>> inputStreams, int maxDataPoints) {
     checkMaxDataPoints(maxDataPoints);
-    return inputStreams.isEmpty()
-        ? blankHdrData()
-        : readAndAggregate(inputStreams, maxDataPoints);
+    return inputStreams.isEmpty() ? blankHdrData() : readAndAggregate(inputStreams, maxDataPoints);
   }
 
   private void checkMaxDataPoints(int maxDataPoints) {
@@ -231,112 +184,94 @@ public class HistogramService {
 
   private HdrData readAndAggregate(List<Supplier<InputStream>> suppliers, int maxDataPoints) {
     return supplyAndGet(() -> {
-      TimeRange frame = timeFrameIntersection(suppliers);
-      List<Histogram> aggregated = suppliers.stream()
-          .map(supplier -> readLog(supplier, frame, maxDataPoints))
-          .reduce(this::sum)
-          .orElseThrow(IllegalStateException::new);
-      return toHdrData(aggregated);
+      List<Stream<Histogram>> components = suppliers.stream().map(this::readLog).collect(toList());
+      return toHdrData(compactTo(aggregate(components), maxDataPoints));
     });
   }
 
-  private TimeRange timeFrameIntersection(List<Supplier<InputStream>> suppliers) {
-    List<TimeRange> timeRanges = suppliers.stream()
-        .map(this::readTimeRange)
-        .map(o -> o.orElseThrow(() -> new IllegalArgumentException("Cannot aggregate a blank log.")))
-        .collect(toList());
-    long latestStart = timeRanges.stream()
-        .mapToLong(tr -> tr.start)
-        .max()
-        .orElseThrow(IllegalStateException::new);
-    long earliestEnd = timeRanges.stream()
-        .mapToLong(tr -> tr.end)
-        .min()
-        .orElseThrow(IllegalStateException::new);
-    return new TimeRange(latestStart, earliestEnd);
-  }
-
-  private Optional<TimeRange> readTimeRange(Supplier<InputStream> s) {
-    try (InputStream is = s.get()) {
-      HistogramLogReader logReader = new HistogramLogReader(is);
-      if (logReader.hasNext()) {
-        long start = logReader.nextIntervalHistogram()
-            .getStartTimeStamp();
-        long end = start;
-        while (logReader.hasNext()) {
-          end = logReader.nextIntervalHistogram()
-              .getStartTimeStamp();
-        }
-        TimeRange timeRange = new TimeRange(start, end);
-        return Optional.of(timeRange);
-      } else {
-        return Optional.empty();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+  private static Stream<Histogram> aggregate(List<Stream<Histogram>> inputs) {
+    Stream.Builder<Supplier<Spliterator<Histogram>>> builder = Stream.builder();
+    for (int i = 0; i < inputs.size(); i++) {
+      final String tag = Integer.toString(i);
+      builder.add(inputs.get(i).peek(histogram -> histogram.setTag(tag))::spliterator);
     }
+    SortedSpliterator<Histogram> sortedComponents = new SortedSpliterator<>(builder.build(), Comparator.comparing(Histogram::getStartTimeStamp), 0);
+
+    Set<String> completeSet = unmodifiableSet(IntStream.range(0, inputs.size()).mapToObj(Integer::toString).collect(toSet()));
+
+    Spliterator<Histogram> aggregator = new Spliterator<Histogram>() {
+
+      private final Map<String, Histogram> currentAssembly = new HashMap<>();
+      @Override
+      public boolean tryAdvance(Consumer<? super Histogram> action) {
+        AtomicBoolean collected = new AtomicBoolean();
+        do {
+          if (!sortedComponents.tryAdvance(histogram -> {
+            Histogram existing = currentAssembly.putIfAbsent(histogram.getTag(), histogram);
+            if (existing == null) {
+              if (currentAssembly.keySet().equals(completeSet)) {
+                Histogram h = new Histogram(NUMBER_OF_SIGNIFICANT_VALUE_DIGITS);
+                currentAssembly.values().forEach(h::add);
+                currentAssembly.clear();
+                collected.set(true);
+                action.accept(h);
+              }
+            } else {
+              currentAssembly.clear();
+              currentAssembly.putIfAbsent(histogram.getTag(), histogram);
+            }
+          })) {
+            return false;
+          }
+        } while (!collected.get());
+
+        return true;
+      }
+
+      @Override
+      public Spliterator<Histogram> trySplit() {
+        return null;
+      }
+
+      @Override
+      public long estimateSize() {
+        long unaggregatedSize = sortedComponents.estimateSize();
+        if (unaggregatedSize == Long.MAX_VALUE) {
+          return Long.MAX_VALUE;
+        } else {
+          return unaggregatedSize / completeSet.size();
+        }
+      }
+
+      @Override
+      public int characteristics() {
+        return 0;
+      }
+    };
+
+    return StreamSupport.stream(aggregator, false);
   }
 
-  private List<Histogram> sum(List<Histogram> timeEntries1, List<Histogram> timeEntries2) {
-    int size = Math.min(timeEntries1.size(), timeEntries2.size());
-    Iterator<Histogram> it1 = timeEntries1.iterator();
-    Iterator<Histogram> it2 = timeEntries2.iterator();
-    return Stream.generate(() -> sum(it1.next(), it2.next()))
-        .limit(size)
-        .collect(toList());
-  }
-
-  private static Histogram sum(Histogram h1, Histogram h2) {
-    Histogram sum = new Histogram(NUMBER_OF_SIGNIFICANT_VALUE_DIGITS);
-    sum.add(h1);
-    sum.add(h2);
-    return sum;
-  }
-
-  static long roundTime(long timeMillis) {
-    return (long)(Math.floor(timeMillis / 1000) * 1000);
+  private static Stream<Histogram> compactTo(Stream<Histogram> histograms, int maxDataPoints) {
+    try {
+      List<Histogram> collected = histograms.collect(toList());
+      if (collected.size() <= maxDataPoints) {
+        return collected.stream();
+      } else {
+        int ratio = (int) Math.ceil(((double) collected.size()) / maxDataPoints);
+        return StreamSupport.stream(new ReducingSpliterator<>(collected.stream().spliterator(), () -> new Histogram(NUMBER_OF_SIGNIFICANT_VALUE_DIGITS), (a, b) -> {
+          a.add(b);
+          return a;
+        }, ratio), false);
+      }
+    } finally {
+      histograms.close();
+    }
   }
 
   public Double comparePercentiles(HdrData x, HdrData y) {
     double[] xvals = x.getFixedPercentileValues();
     double[] yvals = y.getFixedPercentileValues();
     return statisticsTest.kolmogorovSmirnovTest(xvals, yvals);
-  }
-
-  private static class TimeRange {
-    private final long start;
-    private final long end;
-
-    private TimeRange(long start, long end) {
-      this.start = roundTime(start);
-      this.end = roundTime(end);
-    }
-
-    private long length() {
-      return end - start;
-    }
-
-    private boolean contains(TimeEntry timeEntry) {
-      return timeEntry.time >= start && timeEntry.time <= end;
-    }
-
-    @Override
-    public String toString() {
-      return "(" + start + ", " + end + ")";
-    }
-  }
-
-  private static class TimeEntry {
-    private final long time;
-    private final Histogram histogram;
-
-    private TimeEntry(Histogram histogram) {
-      this.time = roundTime(histogram.getStartTimeStamp());
-      this.histogram = histogram;
-    }
-
-    private Histogram getHistogram() {
-      return histogram;
-    }
   }
 }

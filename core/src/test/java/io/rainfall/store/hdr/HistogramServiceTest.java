@@ -26,7 +26,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static io.rainfall.store.hdr.HistogramService.fixedPercentilePoints;
-import static io.rainfall.store.hdr.HistogramService.roundTime;
 import static io.rainfall.store.hdr.Percentile.MAX;
 import static io.rainfall.store.hdr.Percentile.MEDIAN;
 import static io.rainfall.store.hdr.Percentile._99;
@@ -84,50 +83,6 @@ public class HistogramServiceTest {
     assertThat(errors.get(size - 1), is(0.4147095809479754));
 
     checkTimedPercentiles(hdrData);
-    checkPercentiles(hdrData);
-  }
-
-  @Test
-  public void testReadHdrDataReduced() {
-    int maxDataPoints = 100;
-
-    HdrData hdrData = readHlog("153.hlog", maxDataPoints);
-    assertNotNull(hdrData);
-    assertThat(hdrData.size(), is(maxDataPoints));
-
-    List<Long> startTimes = hdrData.getStartTimes();
-    assertThat(startTimes.size(), is(maxDataPoints));
-    assertThat(startTimes.get(0), is(1546881863987L));
-    assertThat(startTimes.get(maxDataPoints - 1), lessThan(1546883664000L));
-
-    assertThat(hdrData.getTps().size(), is(maxDataPoints));
-    assertThat(hdrData.getMeans().size(), is(maxDataPoints));
-    assertThat(hdrData.getErrors().size(), is(maxDataPoints));
-
-    checkTimedPercentiles(hdrData);
-    checkPercentiles(hdrData);
-  }
-
-  private void checkTimedPercentiles(HdrData hdrData) {
-    Percentile.all()
-        .map(hdrData::getTimedPercentiles)
-        .map(List::size)
-        .forEach(size -> assertThat(size, is(hdrData.size())));
-
-    IntStream.range(0, hdrData.size())
-        .forEach(n -> {
-          List<Double> actual = Percentile.all()
-              .map(hdrData::getTimedPercentiles)
-              .map(percentiles -> percentiles.get(n))
-              .collect(toList());
-          List<Double> ordered = actual.stream()
-              .sorted()
-              .collect(toList());
-          assertThat(actual, is(ordered));
-        });
-  }
-
-  private void checkPercentiles(HdrData hdrData) {
     assertThat(hdrData.getValueAtPercentile(MEDIAN), is(2074623L));
     assertThat(hdrData.getValueAtPercentile(_99), is(2795519L));
     assertThat(hdrData.getValueAtPercentile(_99_99), is(19300351L));
@@ -149,14 +104,80 @@ public class HistogramServiceTest {
   }
 
   @Test
+  public void testReadHdrDataReduced() {
+    int maxDataPoints = 100;
+
+    HdrData hdrData = readHlog("153.hlog", maxDataPoints);
+    assertNotNull(hdrData);
+    int size = hdrData.size();
+    assertThat(size, is(lessThan(maxDataPoints)));
+
+    List<Long> startTimes = hdrData.getStartTimes();
+    assertThat(startTimes.size(), is(size));
+    assertThat(startTimes.get(0), is(1546881863987L));
+    assertThat(startTimes.get(size - 1), lessThan(1546883664000L));
+
+    assertThat(hdrData.getTps().size(), is(size));
+    assertThat(hdrData.getMeans().size(), is(size));
+    assertThat(hdrData.getErrors().size(), is(size));
+
+    checkTimedPercentiles(hdrData);
+    assertThat(hdrData.getValueAtPercentile(MEDIAN), is(2075647L));
+    assertThat(hdrData.getValueAtPercentile(_99), is(2795519L));
+    assertThat(hdrData.getValueAtPercentile(_99_99), is(19300351L));
+    assertThat(hdrData.getValueAtPercentile(MAX), is(34701311L));
+
+    int numPercentiles = 126;
+
+    List<Double> points = hdrData.getPercentilePoints();
+    assertThat(points.size(), is(numPercentiles));
+    assertThat(points.get(0), is(0.0));
+    assertThat(points.get(numPercentiles - 1), is(1.0));
+
+    List<Long> percentileValues = hdrData.getPercentileValues();
+    assertThat(percentileValues.size(), is(numPercentiles));
+    assertThat(percentileValues.get(0), is(416255L));
+    assertThat(percentileValues.get(numPercentiles - 1), is(34701311L));
+
+    assertThat(hdrData.getFixedPercentileValues().length, is(10));
+  }
+
+  private void checkTimedPercentiles(HdrData hdrData) {
+    Percentile.all()
+        .map(hdrData::getTimedPercentiles)
+        .map(List::size)
+        .forEach(size -> assertThat(size, is(hdrData.size())));
+
+    IntStream.range(0, hdrData.size())
+        .forEach(n -> {
+          List<Double> actual = Percentile.all()
+              .map(hdrData::getTimedPercentiles)
+              .map(percentiles -> percentiles.get(n))
+              .collect(toList());
+          List<Double> ordered = actual.stream()
+              .sorted()
+              .collect(toList());
+          assertThat(actual, is(ordered));
+        });
+  }
+
+  @Test
   public void testBlankLog() {
     HdrData hdrData = histogramService.readHdrData(this::blankInputStream, 2000);
     testBlankData(hdrData);
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void testEmptyIntervalLog() {
-    readHlog("emptyInterval.hlog", 1);
+    HdrData hdrData = readHlog("emptyInterval.hlog", 1);
+    assertThat(hdrData.size(), is(1));
+    assertThat(hdrData.getStartTimes(), contains(1546881863987L));
+    assertThat(hdrData.getTps(), contains(Double.POSITIVE_INFINITY));
+
+    assertThat(hdrData.getValueAtPercentile(MEDIAN), is(2154495L));
+    assertThat(hdrData.getValueAtPercentile(_99), is(18989055L));
+    assertThat(hdrData.getValueAtPercentile(_99_99), is(19824639L));
+    assertThat(hdrData.getValueAtPercentile(MAX), is(19824639L));
   }
 
   private ByteArrayInputStream blankInputStream() {
@@ -231,7 +252,7 @@ public class HistogramServiceTest {
     testBlankData(hdrData);
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void testAggregateHdrDataBlankLog() {
     List<Supplier<InputStream>> inputStreams = asList(
         () -> getResourceAsStream("153.hlog"),
@@ -311,8 +332,8 @@ public class HistogramServiceTest {
         .collect(toList());
     HdrData hdrData = histogramService.aggregateHdrData(suppliers, 100);
     assertNotNull(hdrData);
-    int size = 100;
-    assertThat(hdrData.size(), is(size));
+    int size = hdrData.size();
+    assertThat(size, is(lessThan(100)));
     Stream.of(hdrData.getStartTimes(),
         hdrData.getTps(),
         hdrData.getMeans(),
@@ -356,14 +377,8 @@ public class HistogramServiceTest {
     List<Supplier<InputStream>> suppliers = hlogStream("232.hlog", "231.hlog", "228.hlog", "227.hlog")
         .collect(toList());
     HdrData hdrData = histogramService.aggregateHdrData(suppliers);
-    assertThat(hdrData.size(), is(54));
+    assertThat(hdrData.size(), is(32));
     checkTimedPercentiles(hdrData);
-  }
-
-  @Test
-  public void testRoundTime() {
-    assertThat(roundTime(1546881863987L), is(1546881863000L));
-    assertThat(roundTime(1546883660000L), is(1546883660000L));
   }
 
   @Test
