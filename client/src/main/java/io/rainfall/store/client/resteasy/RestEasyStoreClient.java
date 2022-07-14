@@ -19,13 +19,16 @@ package io.rainfall.store.client.resteasy;
 import io.rainfall.store.client.StoreClient;
 import io.rainfall.store.core.ChangeReport;
 import io.rainfall.store.core.ClientJob;
+import io.rainfall.store.core.MetricsLog;
 import io.rainfall.store.core.OperationOutput;
 import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestCase;
 import io.rainfall.store.core.TestRun;
+import io.rainfall.store.record.MetricsRec;
 import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
 import org.zalando.jersey.gson.internal.GsonJsonProvider;
 
+import java.util.List;
 import java.util.function.Function;
 
 import javax.ws.rs.client.Client;
@@ -76,10 +79,20 @@ public class RestEasyStoreClient implements StoreClient {
   }
 
   @Override
+  public long addMetricsLog(MetricsLog metricsLog) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public boolean setStatus(long runId, TestRun.Status status) {
     String statusName = status.name();
     String path = "runs" + "/{" + PARENT_PARAM + "}" + "/status";
     return post(path, runId, statusName, Boolean::valueOf);
+  }
+
+  @Override
+  public List<MetricsRec> listMetricsRec() {
+    throw new UnsupportedOperationException();
   }
 
   private long add(String path, Object parentId, Object value) {

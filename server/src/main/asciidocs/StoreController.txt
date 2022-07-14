@@ -5,6 +5,9 @@ http://localhost:4567/performance  - this
 redirects to /cases
 ==================================================================
 
+###################################################################
+Terracotta performance API
+###################################################################
 
 ==================================================================
 testCases
@@ -66,4 +69,16 @@ comparative report
 get:    /compare                                selection of test runs to compare
 get:    /compare/:runId1-runId2                 get a comparison of two runs
 get:    /compare/::runId1-runId2/:operation     get a HDR data mapped to run IDs
+==================================================================
+
+###################################################################
+Cloud metrics API
+###################################################################
+
+==================================================================
+metrics
+------------------------------------------------------------------
+post:   /metrics                                add a metrics file (input : cloud type, json file)
+get:    /metrics                                list cloud metrics
+get:    /metrics/:id                            display metrics
 ==================================================================

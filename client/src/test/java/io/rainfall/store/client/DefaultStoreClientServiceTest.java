@@ -18,10 +18,12 @@ package io.rainfall.store.client;
 
 import io.rainfall.store.core.ChangeReport;
 import io.rainfall.store.core.ClientJob;
+import io.rainfall.store.core.MetricsLog;
 import io.rainfall.store.core.OperationOutput;
 import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestCase;
 import io.rainfall.store.core.TestRun;
+import io.rainfall.store.record.MetricsRec;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -121,6 +123,11 @@ public class DefaultStoreClientServiceTest extends AbstractStoreClientServiceTes
     }
 
     @Override
+    public long addMetricsLog(MetricsLog metricsLog) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean setStatus(long runId, TestRun.Status status) {
       TestRun run = runs.get(runId);
       if (run == null) {
@@ -130,6 +137,11 @@ public class DefaultStoreClientServiceTest extends AbstractStoreClientServiceTes
         runs.put(runId, updated);
         return true;
       }
+    }
+
+    @Override
+    public List<MetricsRec> listMetricsRec() {
+      throw new UnsupportedOperationException();
     }
 
     private TestRun updateStatus(TestRun run, TestRun.Status status) {

@@ -39,8 +39,7 @@ import static java.util.stream.Stream.of;
 abstract class ChildDataset<P extends Comparable<P>, V, B extends Builder<V>, R extends Rec<Long, V>>
     extends TcDataset<Long, V, B, R> {
 
-  private static final Comparator<Record<Long>> ID_COMPARATOR = Record.<Long>keyFunction()
-      .asComparator();
+  private static final Comparator<Record<Long>> ID_COMPARATOR = Record.<Long>keyFunction().asComparator();
 
   private final TcDataset<P, ?, ?, ?> parent;
   private final CellDefinition<P> parentKey;

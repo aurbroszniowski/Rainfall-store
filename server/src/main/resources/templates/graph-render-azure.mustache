@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
+</head>
+<body>
+<div id="graphs"></div>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '/performance/metrics/{{id}}/json',
+            dataType: 'json',
+            success: function( data ) {
+                var graphData = [];
+                $.each(data.value, function (key, val) {
+                    var xData = [];
+                    var yData = [];
+
+                    $.each(val.timeseries[0].data, function(key, entry) {
+                        console.log(entry)
+                        xData.push(entry.timeStamp);
+                        yData.push(entry.total);
+                    });
+
+                    var trace = {
+                        x: xData,
+                        y: yData,
+                        name: val.name.localizedValue,
+                        type: 'scatter',
+                        mode: "lines",
+                    };
+                    if (val.unit == 'Bytes') {
+                        trace.yaxis = 'y2';
+                    } else if (val.unit == 'Percent') {
+                        trace.yaxis = 'y3';
+                    }
+
+                    graphData.push(trace);
+                });
+
+                var layout = {
+                    title: 'Double Y Axis Example',
+                    xaxis: {domain: [0.2, 0.8]},
+                    yaxis: {
+                        title: 'Ops',
+                        titlefont: {color: '#122602'},
+                        tickfont: {color: '#030700'},
+                    },
+                    yaxis2: {
+                        title: 'Bytes',
+                        titlefont: {color: '#d62728'},
+                        tickfont: {color: '#640202'},
+                        anchor: 'x',
+                        overlaying: 'y',
+                        side: 'right',
+                    },
+                    yaxis3: {
+                        title: 'Percentage',
+                        titlefont: {color: '#9467bd'},
+                        tickfont: {color: '#1f0733'},
+                        anchor: 'free',
+                        overlaying: 'y',
+                        side: 'right',
+                        position: 0.85
+                    }
+                };
+
+                Plotly.newPlot('graphs', graphData, layout);
+            },
+            error: function( data ) {
+                console.log( "ERROR:  " + data );
+            }
+        });
+
+
+    });
+</script>
+</body>
+</html>

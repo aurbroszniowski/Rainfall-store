@@ -19,6 +19,7 @@ package io.rainfall.store.service;
 import io.rainfall.store.core.ChangeReport;
 import io.rainfall.store.core.ClientJob;
 import io.rainfall.store.core.FileOutput;
+import io.rainfall.store.core.MetricsLog;
 import io.rainfall.store.core.OperationOutput;
 import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestCase;
@@ -29,14 +30,19 @@ import io.rainfall.store.hdr.HdrData;
 import io.rainfall.store.hdr.HistogramService;
 import io.rainfall.store.record.ClientJobRec;
 import io.rainfall.store.record.DuplicateNameException;
+import io.rainfall.store.record.MetricsRec;
 import io.rainfall.store.record.OutputRec;
 import io.rainfall.store.record.Rec;
 import io.rainfall.store.record.RunRec;
 import io.rainfall.store.record.StatsRec;
 import io.rainfall.store.record.Store;
 import io.rainfall.store.record.TestCaseRec;
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.CDATASection;
 
 import com.google.gson.Gson;
 
@@ -45,9 +51,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -454,6 +462,39 @@ public class StoreService {
     } catch (RuntimeException e) {
       LOGGER.error("Failed to add {}, parent ID={}: {}.", simpleName, parentId, e.getMessage());
       throw e;
+    }
+  }
+
+  public Result addMetricsLog(MetricsLog metricsLog) {
+    final long id = store.addMetricsLog(metricsLog);
+    return new Result(HTTP_CREATED, TEXT_HTML, id);
+  }
+
+  public ModelAndView showMetricsList() {
+    List<MetricsRec> metricsRecList = store.listMetricsRec();
+    return new ModelAndView(metricsRecList, "metrics-list.mustache");
+  }
+
+  public ModelAndView showMetrics(Long id) throws NotFoundException {
+    MetricsRec metricsRec = store.getMetricsRec(id);
+    if (Objects.equals(metricsRec.getCloudType(), "AZURE")) {
+      return new ModelAndView(metricsRec, "graph-render-azure.mustache");
+    } else if (Objects.equals(metricsRec.getCloudType(), "AWS")) {
+      return new ModelAndView(metricsRec, "graph-render-ec2.mustache");
+    } else  throw new NotFoundException();
+  }
+
+  public String showMetricsJson(Long id) {
+    MetricsRec metricsRec = store.getMetricsRec(id);
+    return metricsRec.getValue().getMetrics();
+  }
+
+  public ModelAndView deleteMetrics(Long id) {
+    boolean success = store.deleteMetricsRec(id);
+    if (success) {
+      return new ModelAndView(id, "metrics-deleted.mustache");
+    } else {
+      return new ModelAndView(id, "metrics-not-deleted.mustache");
     }
   }
 }
