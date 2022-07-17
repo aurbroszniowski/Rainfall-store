@@ -18,6 +18,7 @@ package io.rainfall.store.service;
 
 import io.rainfall.store.core.ChangeReport;
 import io.rainfall.store.core.ClientJob;
+import io.rainfall.store.core.MetricsLog;
 import io.rainfall.store.core.OperationOutput;
 import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestCase;
@@ -620,6 +621,18 @@ public class StoreServiceTest {
     String json = gson.toJson(log, StatsLog.class);
     Result added = service()
         .addStatsLog("1", json);
+    assertThat(added, is(new Result(HTTP_CREATED, TEXT_HTML, 2L)));
+  }
+
+  @Test
+  public void testAddMetricsLog() {
+    String json = "{\n" +
+                  "  \"cost\": 295,\n" +
+                  "  {\n" +
+                  "    \"displayDescription\": \"Disk Write IOPS\"\n" +
+                  "  }\n" +
+                  "}";
+    Result added = service().addMetricsLog(new MetricsLog("myLabel", "AZURE", json));
     assertThat(added, is(new Result(HTTP_CREATED, TEXT_HTML, 2L)));
   }
 

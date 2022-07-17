@@ -1,0 +1,6 @@
+<h1>list of cloud runs</h1>
+<ul>
+    {{#.}}
+        <li><a href="/performance/metrics/{{id}}">{{value.label}} ({{value.cloudType}})</a> - <a href="/performance/metrics/delete/{{id}}">delete record</a></li>
+    {{/.}}
+</ul>

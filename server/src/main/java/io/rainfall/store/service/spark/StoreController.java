@@ -16,7 +16,9 @@
 
 package io.rainfall.store.service.spark;
 
+import io.rainfall.store.core.MetricsLog;
 import io.rainfall.store.record.Store;
+import io.rainfall.store.service.NotFoundException;
 import io.rainfall.store.service.Result;
 import io.rainfall.store.service.StoreService;
 import spark.ModelAndView;
@@ -29,9 +31,18 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.ServletException;
+import javax.servlet.http.Part;
 
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -48,7 +59,7 @@ public class StoreController implements AutoCloseable {
 
   private final Service service;
   private final Gson gson = new Gson();
-  private final MustacheTemplateEngine templateEngine = new MustacheTemplateEngine();
+  private final MustacheTemplateEngine mustacheTemplateEngine = new MustacheTemplateEngine();
 
   public StoreController(Store store, String path, int port) {
     StoreService perfService = new StoreService(store);
@@ -109,7 +120,42 @@ public class StoreController implements AutoCloseable {
           "compare-report.mustache", ":ids");
       service.get("/compare/:ids/:operation",
           (q, s) -> getComparativeHdrData(perfService, q, s));
+
+      // curl -X POST -G -d label=0713-19:34 -d cloudType=AZURE -d metrics={hello} http://localhost:4567/performance/metrics
+      service.post("/metrics",
+          (req, res) -> {
+            MultipartConfigElement multipartConfigElement = new MultipartConfigElement("/tmp");
+            req.raw().setAttribute("org.eclipse.jetty.multipartConfig", multipartConfigElement);
+            return perfService.addMetricsLog(new MetricsLog(getMultiPartFormField(req, "label"),
+                getMultiPartFormField(req, "cloudType"), getMultiPartFormField(req, "metrics")));
+          });
+
+      service.get("/metrics", (req, res) -> perfService.showMetricsList(), mustacheTemplateEngine);
+      service.get("/metrics/:id", (req, res) -> {
+        try {
+          return perfService.showMetrics(Long.valueOf(req.params("id")));
+        } catch (NotFoundException e) {
+          res.status(404);
+          res.body("Metrics not found");
+          return null;
+        }
+      }, mustacheTemplateEngine);
+      service.get("/metrics/:id/json",
+          (req, res) -> {
+            res.type("application/json");
+            return perfService.showMetricsJson(Long.valueOf(req.params("id")));
+          });
+      service.get("/metrics/delete/:id",
+          (req, res) -> perfService.deleteMetrics(Long.valueOf(req.params("id"))), mustacheTemplateEngine);
     });
+  }
+
+  private String getMultiPartFormField(Request req, String key) throws ServletException, IOException {
+    Part metricsPart = req.raw().getPart(key);
+    String value = new BufferedReader(
+        new InputStreamReader(metricsPart.getInputStream(), StandardCharsets.UTF_8))
+        .lines().collect(Collectors.joining("\n"));
+    return value;
   }
 
   @SuppressWarnings("SameParameterValue")
@@ -137,7 +183,7 @@ public class StoreController implements AutoCloseable {
                     BiFunction<Request, Response, ModelAndView> modelAndViewGenerator) {
     service.get(path, (q, s) -> {
       LOGGER.info("GET: {}.", q.pathInfo());
-      return templateEngine.render(modelAndViewGenerator.apply(q, s));
+      return mustacheTemplateEngine.render(modelAndViewGenerator.apply(q, s));
     });
   }
 

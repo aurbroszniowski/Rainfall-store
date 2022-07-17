@@ -17,11 +17,13 @@
 package io.rainfall.store.record.tc;
 
 import io.rainfall.store.core.ClientJob;
+import io.rainfall.store.core.MetricsLog;
 import io.rainfall.store.core.OperationOutput;
 import io.rainfall.store.core.StatsLog;
 import io.rainfall.store.core.TestCase;
 import io.rainfall.store.core.TestRun;
 import io.rainfall.store.record.ClientJobRec;
+import io.rainfall.store.record.MetricsRec;
 import io.rainfall.store.record.OutputRec;
 import io.rainfall.store.record.RunRec;
 import io.rainfall.store.record.StatsRec;
@@ -51,6 +53,7 @@ public class RainfallStore implements Store {
   private final JobDataset jobs;
   private final OutputDataset outputs;
   private final StatsDataset stats;
+  private MetricsDataset metrics;
 
   public RainfallStore(DatasetManager datasetManager, DatasetConfiguration config)
       throws StoreException {
@@ -65,6 +68,7 @@ public class RainfallStore implements Store {
         createDataset("outputs", config));
     this.stats = new StatsDataset(runs,
         createDataset("stats", config));
+    this.metrics = new MetricsDataset(createDataset("metrics", config));
   }
 
   private Dataset<Long> createDataset(String name, DatasetConfiguration config)
@@ -154,10 +158,29 @@ public class RainfallStore implements Store {
   public long addStatsLog(long runId, StatsLog log) {
     return stats.add(runId, log);
   }
+  @Override
+  public long addMetricsLog(MetricsLog metricsLog) {
+    return this.metrics.add(metricsLog);
+  }
 
   @Override
   public boolean setStatus(long runId, TestRun.Status status) {
     return runs.setStatus(runId, status);
+  }
+
+  @Override
+  public List<MetricsRec> listMetricsRec() {
+    return this.metrics.list();
+  }
+
+  @Override
+  public MetricsRec getMetricsRec(Long id) {
+    return this.metrics.get(id);
+  }
+
+  @Override
+  public boolean deleteMetricsRec(Long id) {
+    return this.metrics.delete(id);
   }
 
   @Override
