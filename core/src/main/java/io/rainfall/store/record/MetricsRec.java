@@ -6,8 +6,7 @@ import io.rainfall.store.core.MetricsLog;
  * @author Aurelien Broszniowski
  */
 
-public class MetricsRec {
-
+public class MetricsRec implements Comparable<MetricsRec> {
   private final Long id;
   private final MetricsLog value;
 
@@ -26,5 +25,10 @@ public class MetricsRec {
 
   public String getCloudType() {
     return this.value.getCloudType();
+  }
+
+  @Override
+  public int compareTo(MetricsRec o) {
+    return (this.getId().compareTo(o.getId()));
   }
 }

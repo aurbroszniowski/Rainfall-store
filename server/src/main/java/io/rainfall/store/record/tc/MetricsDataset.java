@@ -12,6 +12,7 @@ import com.terracottatech.store.definition.StringCellDefinition;
 import com.terracottatech.store.stream.RecordStream;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +89,7 @@ public class MetricsDataset {
       }
       metricsRecList.add(new MetricsRec(key, new MetricsLog(l, c, m)));
     });
+    Collections.sort(metricsRecList);
     return metricsRecList;
   }
 
