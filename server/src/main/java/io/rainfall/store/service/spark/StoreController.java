@@ -121,7 +121,7 @@ public class StoreController implements AutoCloseable {
       service.get("/compare/:ids/:operation",
           (q, s) -> getComparativeHdrData(perfService, q, s));
 
-      // curl -X POST -G -d label=0713-19:34 -d cloudType=AZURE -d metrics={hello} http://localhost:4567/performance/metrics
+      // curl -X POST -F 'cloudType=AWS' -F 'label=something' -F 'metrics=@output-metric-data-ec2.json' http://localhost:4567/performance/metrics
       service.post("/metrics",
           (req, res) -> {
             MultipartConfigElement multipartConfigElement = new MultipartConfigElement("/tmp");
