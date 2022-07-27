@@ -95,6 +95,16 @@ public class RestEasyStoreClient implements StoreClient {
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public MetricsRec getMetricsRec(Long id) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean deleteMetricsRec(Long id) {
+    throw new UnsupportedOperationException();
+  }
+
   private long add(String path, Object parentId, Object value) {
     return post(path + "/{" + PARENT_PARAM + "}",
         parentId, value, Long::valueOf);

@@ -633,7 +633,7 @@ public class StoreServiceTest {
                   "  }\n" +
                   "}";
     Result added = service().addMetricsLog(new MetricsLog("myLabel", "AZURE", json));
-    assertThat(added, is(new Result(HTTP_CREATED, TEXT_HTML, 2L)));
+    assertThat(added, is(new Result(HTTP_CREATED, TEXT_HTML, 0L)));
   }
 
   @Test

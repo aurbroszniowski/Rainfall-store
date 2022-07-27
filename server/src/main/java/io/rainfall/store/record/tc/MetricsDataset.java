@@ -60,7 +60,6 @@ public class MetricsDataset {
     final String label = metricsLog.getLabel();
     final String cloudType = metricsLog.getCloudType();
     final String metrics = metricsLog.getMetrics();
-    System.out.println("Label = " + label + " - cloudType = " + cloudType + " - metrics = " + metrics);
     dataset.writerReader().add(key, Cell.cell("label", label),
           Cell.cell("cloudType", cloudType),
           Cell.cell("metrics", metrics));

@@ -144,6 +144,16 @@ public class DefaultStoreClientServiceTest extends AbstractStoreClientServiceTes
       throw new UnsupportedOperationException();
     }
 
+    @Override
+    public MetricsRec getMetricsRec(Long id) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean deleteMetricsRec(Long id) {
+      throw new UnsupportedOperationException();
+    }
+
     private TestRun updateStatus(TestRun run, TestRun.Status status) {
       return TestRun.builder()
           .className(run.getClassName())
