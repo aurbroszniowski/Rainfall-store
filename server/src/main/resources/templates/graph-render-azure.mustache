@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id="graphs"></div>
+<div id="avg"></div>
 <script>
     $(document).ready(function () {
         $.ajax({
@@ -18,12 +19,18 @@
                 $.each(data.value, function (key, val) {
                     var xData = [];
                     var yData = [];
+                    var total = 0;
+                    var count = 0;
 
                     $.each(val.timeseries[0].data, function(key, entry) {
                         console.log(entry)
                         xData.push(entry.timeStamp);
                         yData.push(entry.total);
+                        total += entry.total;
+                        count++;
                     });
+                    var avg = total/count;
+                    $( "#avg" ).append("Average (" + val.name.localizedValue + ") =" + avg + "</br>");
 
                     var trace = {
                         x: xData,
