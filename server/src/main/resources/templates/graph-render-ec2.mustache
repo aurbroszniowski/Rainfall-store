@@ -8,6 +8,7 @@
 </head>
 <body>
 <div id="graphs"></div>
+<div id="avg"></div>
 <script>
     $(document).ready(function () {
         $.ajax({
@@ -24,10 +25,16 @@
                     });
 
                     var yData = [];
+                    var total = 0;
+                    var count = 0;
                     $.each(val.Values, function (key, values) {
                         console.log(values)
                         yData.push(values);
+                        total += values;
+                        count++;
                     });
+                    var avg = total/count;
+                    $( "#avg" ).append("Average (" + val.Label + ") =" + avg + "</br>");
 
                     var trace = {
                         x: xData,
