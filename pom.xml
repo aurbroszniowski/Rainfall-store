@@ -22,7 +22,7 @@
 
   <groupId>io.rainfall</groupId>
   <artifactId>rainfall-store</artifactId>
-  <version>1.6.5-SNAPSHOT</version>
+  <version>1.6.5</version>
   <name>rainfall-store</name>
   <packaging>pom</packaging>
 
@@ -34,6 +34,7 @@
   </modules>
 
   <properties>
+    <nexus.version>1.6.4</nexus.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -232,7 +233,7 @@
           <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.4</version>
+            <version>${nexus.version}</version>
             <extensions>true</extensions>
             <configuration>
               <serverId>ossrh</serverId>
