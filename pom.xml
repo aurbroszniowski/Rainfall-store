@@ -22,7 +22,7 @@
 
   <groupId>io.rainfall</groupId>
   <artifactId>rainfall-store</artifactId>
-  <version>1.6.7</version>
+  <version>1.6.8-SNAPSHOT</version>
   <name>rainfall-store</name>
   <packaging>pom</packaging>
 
