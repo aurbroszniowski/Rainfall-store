@@ -22,7 +22,7 @@
 
   <groupId>io.rainfall</groupId>
   <artifactId>rainfall-store</artifactId>
-  <version>1.6.9</version>
+  <version>1.6.10</version>
   <name>rainfall-store</name>
   <packaging>pom</packaging>
 
@@ -34,7 +34,7 @@
   </modules>
 
   <properties>
-    <nexus.version>1.6.4</nexus.version>
+    <nexus.version>1.6.13</nexus.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <project.build.outputEncoding>UTF-8</project.build.outputEncoding>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
