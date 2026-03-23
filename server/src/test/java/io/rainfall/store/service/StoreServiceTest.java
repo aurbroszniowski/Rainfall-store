@@ -74,10 +74,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -132,7 +132,7 @@ public class StoreServiceTest {
         .thenReturn(of(new TestCaseRec("Test1", testCase, 0L)));
     doThrow(new DuplicateNameException("Test1"))
         .when(store)
-        .addTestCase(anyString(), argThat(not(equalTo(testCase))));
+        .addTestCase(anyString(), argThat(candidate -> !testCase.equals(candidate)));
     when(store.getTestCases())
         .thenReturn(asList(
             new TestCaseRec("Test2", testCase, 1),
