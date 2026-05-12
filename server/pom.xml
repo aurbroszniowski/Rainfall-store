@@ -26,6 +26,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>rainfall-store-server</artifactId>
+  <name>rainfall-store-server</name>
 
   <dependencies>
     <dependency>

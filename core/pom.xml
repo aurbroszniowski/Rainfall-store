@@ -26,6 +26,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>rainfall-store-core</artifactId>
+  <name>rainfall-store-core</name>
 
   <dependencies>
     <dependency>
