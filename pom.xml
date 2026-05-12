@@ -22,7 +22,7 @@
 
   <groupId>io.rainfall</groupId>
   <artifactId>rainfall-store</artifactId>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>2.0.0</version>
   <name>rainfall-store</name>
   <packaging>pom</packaging>
 
@@ -225,9 +225,6 @@
                 <goals>
                   <goal>sign</goal>
                 </goals>
-                <configuration>
-                  <useAgent>false</useAgent>
-                </configuration>
               </execution>
             </executions>
           </plugin>
